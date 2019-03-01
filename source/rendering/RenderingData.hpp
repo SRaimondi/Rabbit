@@ -8,111 +8,117 @@
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120
 #define CL_HPP_TARGET_OPENCL_VERSION 120
+
 #include "cl2.hpp"
 
+namespace Rendering
+{
 namespace CL
 {
-    // Storage class for the Rays data
-    struct Rays
-    {
-        Rays(const cl::Context& context, unsigned int num_rays);
 
-        const unsigned int num_rays;
+// Storage class for the Rays data
+struct Rays
+{
+    Rays(const cl::Context& context, unsigned int num_rays);
 
-        // Origin
-        cl::Buffer origin_x;
-        cl::Buffer origin_y;
-        cl::Buffer origin_z;
+    const unsigned int num_rays;
 
-        // Direction
-        cl::Buffer direction_x;
-        cl::Buffer direction_y;
-        cl::Buffer direction_z;
+    // Origin
+    cl::Buffer origin_x;
+    cl::Buffer origin_y;
+    cl::Buffer origin_z;
 
-        // Ray extent
-        cl::Buffer extent;
+    // Direction
+    cl::Buffer direction_x;
+    cl::Buffer direction_y;
+    cl::Buffer direction_z;
 
-        // Current depth of the ray (cl_uint)
-        cl::Buffer depth;
-    };
+    // Ray extent
+    cl::Buffer extent;
 
-    // Storage class for the intersection information
-    struct Intersections
-    {
-        Intersections(const cl::Context& context, unsigned int num_intersections);
+    // Current depth of the ray (cl_uint)
+    cl::Buffer depth;
+};
 
-        const unsigned int num_intersections;
+// Storage class for the intersection information
+struct Intersections
+{
+    Intersections(const cl::Context& context, unsigned int num_intersections);
 
-        // Hit point
-        cl::Buffer hit_point_x;
-        cl::Buffer hit_point_y;
-        cl::Buffer hit_point_z;
+    const unsigned int num_intersections;
 
-        // Normal
-        cl::Buffer normal_x;
-        cl::Buffer normal_y;
-        cl::Buffer normal_z;
+    // Hit point
+    cl::Buffer hit_point_x;
+    cl::Buffer hit_point_y;
+    cl::Buffer hit_point_z;
 
-        // UV coordinates
-        cl::Buffer uv_s;
-        cl::Buffer uv_t;
+    // Normal
+    cl::Buffer normal_x;
+    cl::Buffer normal_y;
+    cl::Buffer normal_z;
 
-        // Index of the intersected primitive (cl_uint)
-        cl::Buffer primitive_index;
-    };
+    // UV coordinates
+    cl::Buffer uv_s;
+    cl::Buffer uv_t;
 
-    // Samples taken in the image plane
-    struct Samples
-    {
-        Samples(const cl::Context& context, unsigned int num_samples);
+    // Index of the intersected primitive (cl_uint)
+    cl::Buffer primitive_index;
+};
 
-        const unsigned int num_samples;
+// Samples taken in the image plane
+struct Samples
+{
+    Samples(const cl::Context& context, unsigned int num_samples);
 
-        // Incoming radiance
-        cl::Buffer Li_r;
-        cl::Buffer Li_g;
-        cl::Buffer Li_b;
+    const unsigned int num_samples;
 
-        // Accumulation mask for current path
-        cl::Buffer beta_r;
-        cl::Buffer beta_g;
-        cl::Buffer beta_b;
+    // Incoming radiance
+    cl::Buffer Li_r;
+    cl::Buffer Li_g;
+    cl::Buffer Li_b;
 
-        // Sample pixel coordinates
-        cl::Buffer pixel_x;
-        cl::Buffer pixel_y;
+    // Accumulation mask for current path
+    cl::Buffer beta_r;
+    cl::Buffer beta_g;
+    cl::Buffer beta_b;
 
-        // Sample offset in the pixel
-        cl::Buffer sample_offset_x;
-        cl::Buffer sample_offset_y;
-    };
+    // Sample pixel coordinates
+    cl::Buffer pixel_x;
+    cl::Buffer pixel_y;
 
-    // Film pixels
-    struct Pixels
-    {
-        Pixels(const cl::Context& context, unsigned int num_pixels);
+    // Sample offset in the pixel
+    cl::Buffer sample_offset_x;
+    cl::Buffer sample_offset_y;
+};
 
-        const unsigned int num_pixels;
+// Film pixels
+struct Pixels
+{
+    Pixels(const cl::Context& context, unsigned int num_pixels);
 
-        // Accumulated pixel value
-        cl::Buffer pixel_r;
-        cl::Buffer pixel_g;
-        cl::Buffer pixel_b;
+    const unsigned int num_pixels;
 
-        // Total filter value
-        cl::Buffer filter_weight;
-    };
+    // Accumulated pixel value
+    cl::Buffer pixel_r;
+    cl::Buffer pixel_g;
+    cl::Buffer pixel_b;
 
-    // XOrShift status, it's a very simple generator but good enough for testing and also has 32bit status
-    struct XOrShift
-    {
-        XOrShift(const cl::Context& context, unsigned int num_generators);
+    // Total filter value
+    cl::Buffer filter_weight;
+};
 
-        const unsigned int num_generators;
+// XOrShift status, it's a very simple generator but good enough for testing and also has 32bit status
+struct XOrShift
+{
+    XOrShift(const cl::Context& context, unsigned int num_generators);
 
-        // Status of the generator
-        cl::Buffer state;
-    };
-}
+    const unsigned int num_generators;
+
+    // Status of the generator
+    cl::Buffer state;
+};
+
+} // CL namespace
+} // Rendering namespace
 
 #endif //RABBIT_RENDERINGDATA_HPP

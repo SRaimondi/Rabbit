@@ -9,8 +9,9 @@
 
 namespace IO
 {
-    // Read file content into string
-    std::string ReadFile(const std::string& filename);
+
+// Read file content into string
+std::string ReadFile(const std::string& filename);
 
 } // IO namespace
 

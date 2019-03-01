@@ -81,7 +81,7 @@ int main()
         std::array<cl_context_properties, 3> context_properties{
             CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(selected_platform()),
             0 };
-        CL::RenderingContext rendering_context{ selected_device, context_properties.data(), 512, 512 };
+        Rendering::CL::RenderingContext rendering_context{ selected_device, context_properties.data(), 512, 512 };
 
     }
     catch (const cl::Error& err)
@@ -94,9 +94,6 @@ int main()
         std::cerr << ex.what() << std::endl;
         exit(EXIT_FAILURE);
     }
-
-    // Create the rendering context
-
 
     return 0;
 }

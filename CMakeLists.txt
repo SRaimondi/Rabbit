@@ -25,7 +25,7 @@ add_executable(Rabbit
         source/utilities/CLError.cpp
         source/utilities/CLError.hpp
         source/utilities/Vector.hpp
-        source/utilities/Common.hpp)
+        source/utilities/Common.hpp source/rendering/Camera.cpp source/rendering/Camera.hpp)
 
 if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)

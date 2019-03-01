@@ -15,8 +15,10 @@
 
 namespace CL
 {
-    // Convert error code to string
-    std::string ErrorCodeToString(cl_int err_code) noexcept;
+
+// Convert error code to string
+std::string ErrorCodeToString(cl_int err_code) noexcept;
+
 }
 
 #endif //RABBIT_CLERROR_HPP
