@@ -29,12 +29,12 @@ struct Vector3
 // Math operations
 constexpr const Vector3 operator+(const Vector3& lhs, const Vector3& rhs) noexcept
 {
-    return { lhs.x + rhs.x, lhs.y + rhs.y, lhs.x + rhs.y };
+    return { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z };
 }
 
 constexpr const Vector3 operator-(const Vector3& lhs, const Vector3& rhs) noexcept
 {
-    return { lhs.x - rhs.x, lhs.y - rhs.y, lhs.x - rhs.y };
+    return { lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z };
 }
 
 constexpr const Vector3 operator*(float lhs, const Vector3& rhs) noexcept
@@ -78,6 +78,14 @@ inline float Norm(const Vector3& v) noexcept
 inline const Vector3 Normalize(const Vector3& v) noexcept
 {
     return v / Norm(v);
+}
+
+inline void NormalizeInPlace(Vector3& v) noexcept
+{
+    const float inv_norm = 1.f / Norm(v);
+    v.x *= inv_norm;
+    v.y *= inv_norm;
+    v.z *= inv_norm;
 }
 
 #endif //RABBIT_VECTOR_HPP

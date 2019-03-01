@@ -1,6 +1,7 @@
 #include "RenderingContext.hpp"
 
 #include <iostream>
+#include "Common.hpp"
 
 int main()
 {
