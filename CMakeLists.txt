@@ -31,7 +31,9 @@ add_executable(Rabbit
         source/rendering/Camera.hpp
         source/utilities/OpenCLInclude.hpp
         source/scene/SceneParser.cpp
-        source/scene/SceneParser.hpp)
+        source/scene/SceneParser.hpp
+        source/rendering/TileRenderingContext.cpp
+        source/rendering/TileRenderingContext.hpp)
 
 if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)

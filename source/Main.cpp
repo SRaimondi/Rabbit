@@ -1,4 +1,5 @@
 #include "RenderingContext.hpp"
+#include "TileRenderingContext.hpp"
 
 #include <iostream>
 
