@@ -14,16 +14,11 @@ find_package(OpenCL REQUIRED)
 
 add_executable(Rabbit
         source/main.cpp
-        source/cl/CLError.cpp
-        source/cl/CLError.hpp
-        source/rendering/TracingData.cpp
-        source/rendering/TracingData.hpp
         external/cl2.hpp
         external/stb_image_writer.hpp
         source/utilities/FileIO.cpp
         source/utilities/FileIO.hpp
-        source/cl/CLProgram.cpp
-        source/cl/CLProgram.hpp)
+        source/rendering/RenderingContext.cpp source/rendering/RenderingContext.hpp source/rendering/RenderingData.cpp source/rendering/RenderingData.hpp)
 
 if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)
