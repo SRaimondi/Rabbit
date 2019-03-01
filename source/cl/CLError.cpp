@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 namespace CL
 {
@@ -108,6 +109,18 @@ namespace CL
             std::ostringstream error_message;
             error_message << "OpenCL error: " << ErrorToSTring(err_code) << "\nFrom: " << file << ": " << line;
             throw std::runtime_error(error_message.str());
+        }
+    }
+
+    void CheckLogCLErrorHelper(cl_int err_code, int line, const char* file) noexcept
+    {
+        try
+        {
+            CheckCLErrorHelper(err_code, line, file);
+        }
+        catch (const std::exception& ex)
+        {
+            std::cerr << ex.what() << std::endl;
         }
     }
 

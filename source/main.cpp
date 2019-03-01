@@ -1,5 +1,4 @@
 #include <iostream>
-#include "CLError.hpp"
 
 int main()
 {
