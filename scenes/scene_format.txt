@@ -1,0 +1,5 @@
+<image_width> <image_height>
+<tile_width> <tile_height> <samples_per_pixel>
+<number_of_spheres>
+<center_x> <center_y> <center_z> <radius>
+...

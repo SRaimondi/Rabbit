@@ -1,16 +1,21 @@
+#include "SceneParser.hpp"
 #include "RenderingContext.hpp"
 
 #include <iostream>
-#include "Common.hpp"
 
-int main()
+int main(int argc, const char** argv)
 {
-    cl::Platform selected_platform;
-    cl::Device selected_device;
+    if (argc != 2)
+    {
+        std::cerr << "Invalid number of arguments, expecting file to Scene description file\n";
+        exit(EXIT_FAILURE);
+    }
 
-    // Select platform and device
     try
     {
+        // Read scene description
+        const SceneDescription scene_description = SceneParser::ReadSceneDescription(argv[1]);
+
         // Find all platforms
         std::vector<cl::Platform> platforms;
         cl::Platform::get(&platforms);
@@ -21,6 +26,7 @@ int main()
         }
 
         // Select platform by name
+        cl::Platform selected_platform;
         if (platforms.size() > 1)
         {
             std::size_t selected_platform_index = platforms.size();
@@ -54,6 +60,7 @@ int main()
         }
 
         // Select device by name
+        cl::Device selected_device;
         if (devices.size() > 1)
         {
             std::size_t selected_device_index = devices.size();

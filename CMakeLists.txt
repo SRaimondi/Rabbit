@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(source
         source/cl
         source/rendering
+        source/scene
         source/utilities
         external)
 
@@ -25,7 +26,14 @@ add_executable(Rabbit
         source/utilities/CLError.cpp
         source/utilities/CLError.hpp
         source/utilities/Vector.hpp
-        source/utilities/Common.hpp source/rendering/Camera.cpp source/rendering/Camera.hpp)
+        source/utilities/Common.hpp
+        source/rendering/Camera.cpp
+        source/rendering/Camera.hpp
+        source/scene/Scene.cpp
+        source/scene/Scene.hpp
+        source/utilities/OpenCLInclude.hpp
+        source/scene/SceneParser.cpp
+        source/scene/SceneParser.hpp)
 
 if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)
