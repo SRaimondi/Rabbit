@@ -29,10 +29,6 @@ public:
 private:
     // Host spheres
     std::vector<Sphere> h_spheres;
-
-public:
-    // Buffer with spheres on the device
-    cl::Buffer d_spheres;
 };
 
 #endif //RABBIT_SCENE_HPP

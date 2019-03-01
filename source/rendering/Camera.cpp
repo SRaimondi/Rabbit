@@ -14,12 +14,23 @@ Camera::Camera(const Vector3& eye, const Vector3& at, const Vector3& up, float f
       inv_width{ 1.f / image_width }, inv_height{ 1.f / image_height }
 {
     // Compute local base
-    w = Normalize(eye - at);
-    u = Normalize(Cross(up, w));
-    v = Cross(w, u);
+    ComputeLocalBase(eye, at, up);
     // Compute FOV
     bottom = -std::tan(Radians(fov / 2.f));
     left = bottom * image_width / image_height;
+}
+
+void Camera::Move(const Vector3& eye, const Vector3& at, const Vector3& up) noexcept
+{
+    ComputeLocalBase(eye, at, up);
+}
+
+void Camera::ComputeLocalBase(const Vector3& eye, const Vector3& at, const Vector3& up) noexcept
+{
+    // Compute local base
+    w = Normalize(eye - at);
+    u = Normalize(Cross(up, w));
+    v = Cross(w, u);
 }
 
 } // Rendering namespace

@@ -5,16 +5,25 @@
 #ifndef RABBIT_CAMERA_HPP
 #define RABBIT_CAMERA_HPP
 
+#include <cl2.hpp>
 #include "Vector.hpp"
 
 namespace Rendering
 {
 
-struct Camera
+class Camera
 {
-    // Setup new camera in a Look-At methods
+public:
+    // Setup new camera in a Look-At way
     Camera(const Vector3& eye, const Vector3& at, const Vector3& up,
            float fov, unsigned int width, unsigned int height) noexcept;
+
+    // Move camera around
+    void Move(const Vector3& eye, const Vector3& at, const Vector3& up) noexcept;
+
+private:
+    // Compute local base
+    void ComputeLocalBase(const Vector3& eye, const Vector3& at, const Vector3& up) noexcept;
 
     // Eye position
     Vector3 eye;
