@@ -37,6 +37,12 @@ public:
                          const SceneDescription& scene_description,
                          const Camera& camera);
 
+    // Access TileDescription from the context
+    const TileDescription& TileDesc() const noexcept
+    {
+        return tile_description;
+    }
+
 private:
     // Command queue where the commands are issued for the tile
     cl::CommandQueue command_queue;

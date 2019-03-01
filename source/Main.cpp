@@ -94,7 +94,7 @@ int main(int argc, const char** argv)
             0 };
         Rendering::CL::RenderingContext rendering_context{ selected_device, context_properties.data(),
                                                            scene_description, camera };
-        
+
     }
     catch (const cl::Error& err)
     {
