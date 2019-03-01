@@ -27,6 +27,10 @@ namespace CL
         // OpenCL context
         cl::Context context;
 
+        // Size of the image we are rendering
+        const unsigned int target_image_width;
+        const unsigned int target_image_height;
+
         // TODO Move this in a separate class maybe
         // Programs and kernels
 
@@ -34,6 +38,7 @@ namespace CL
         Rays d_rays;
         Intersections d_intersections;
         Samples d_samples;
+        Pixels d_pixels;
         XOrShift d_xorshift_state;
     };
 

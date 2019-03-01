@@ -15,8 +15,12 @@ namespace CL
                                        unsigned int image_width, unsigned int image_height)
     try
         : target_device(device), context(device, contex_prop, RenderingContext::ContextCallback),
-          d_rays(context, image_width * image_height), d_intersections(context, image_width * image_height),
-          d_samples(context, image_width * image_height), d_xorshift_state(context, image_width * image_height)
+          target_image_width(image_width), target_image_height(image_height),
+          d_rays(context, target_image_width * target_image_height),
+          d_intersections(context, target_image_width * target_image_height),
+          d_samples(context, target_image_width * target_image_height),
+          d_pixels(context, target_image_width * target_image_height),
+          d_xorshift_state(context, target_image_width * target_image_height)
     {}
     catch (const cl::Error& err)
     {

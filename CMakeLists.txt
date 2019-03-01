@@ -18,7 +18,7 @@ add_executable(Rabbit
         external/stb_image_writer.hpp
         source/utilities/FileIO.cpp
         source/utilities/FileIO.hpp
-        source/rendering/RenderingContext.cpp source/rendering/RenderingContext.hpp source/rendering/RenderingData.cpp source/rendering/RenderingData.hpp source/utilities/CLError.cpp source/utilities/CLError.hpp)
+        source/rendering/RenderingContext.cpp source/rendering/RenderingContext.hpp source/rendering/RenderingData.cpp source/rendering/RenderingData.hpp source/utilities/CLError.cpp source/utilities/CLError.hpp source/utilities/Vector.hpp)
 
 if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)
