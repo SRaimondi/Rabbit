@@ -45,6 +45,14 @@ namespace CL
           sample_offset_y{ context, CL_MEM_READ_WRITE, num_samples * sizeof(cl_float) }
     {}
 
+    Pixels::Pixels(const cl::Context& context, unsigned int num_pixels)
+        : num_pixels(num_pixels),
+          pixel_r{ context, CL_MEM_READ_WRITE, num_pixels * sizeof(cl_float) },
+          pixel_g{ context, CL_MEM_READ_WRITE, num_pixels * sizeof(cl_float) },
+          pixel_b{ context, CL_MEM_READ_WRITE, num_pixels * sizeof(cl_float) },
+          filter_weight{ context, CL_MEM_READ_WRITE, num_pixels * sizeof(cl_float) }
+    {}
+
     XOrShift::XOrShift(const cl::Context& context, unsigned int num_generators)
         : num_generators{ num_generators },
           state{ context, CL_MEM_READ_WRITE, num_generators * sizeof(cl_uint) }

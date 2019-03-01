@@ -87,6 +87,22 @@ namespace CL
         cl::Buffer sample_offset_y;
     };
 
+    // Film pixels
+    struct Pixels
+    {
+        Pixels(const cl::Context& context, unsigned int num_pixels);
+
+        const unsigned int num_pixels;
+
+        // Accumulated pixel value
+        cl::Buffer pixel_r;
+        cl::Buffer pixel_g;
+        cl::Buffer pixel_b;
+
+        // Total filter value
+        cl::Buffer filter_weight;
+    };
+
     // XOrShift status, it's a very simple generator but good enough for testing and also has 32bit status
     struct XOrShift
     {

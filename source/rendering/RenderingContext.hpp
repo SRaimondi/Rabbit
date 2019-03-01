@@ -13,14 +13,22 @@ namespace CL
     class RenderingContext
     {
     public:
+        // Create a new rendering context given a device, context properties and the size of the image we are targeting
+        RenderingContext(const cl::Device& device, cl_context_properties* contex_prop,
+                         unsigned int image_width, unsigned int image_height);
+
 
     private:
+        static void CL_CALLBACK
+        ContextCallback(const char* errinfo, const void* private_info, size_t cb, void* user_data);
+
         // Device where we run our rendering process, this is passed in from outside
         cl::Device target_device;
         // OpenCL context
         cl::Context context;
 
-        // Programs and kernels, maybe in a new class
+        // TODO Move this in a separate class maybe
+        // Programs and kernels
 
         // Data for the kernels
         Rays d_rays;
