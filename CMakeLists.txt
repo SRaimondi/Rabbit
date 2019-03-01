@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(source
         source/cl
         source/rendering
-        source/utilities)
+        source/utilities
+        external)
 
 find_package(OpenCL REQUIRED)
 
@@ -16,7 +17,13 @@ add_executable(Rabbit
         source/cl/CLError.cpp
         source/cl/CLError.hpp
         source/rendering/TracingData.cpp
-        source/rendering/TracingData.hpp external/stb_image_writer.hpp source/utilities/FileIO.cpp source/utilities/FileIO.hpp source/cl/CLProgram.cpp source/cl/CLProgram.hpp)
+        source/rendering/TracingData.hpp
+        external/cl2.hpp
+        external/stb_image_writer.hpp
+        source/utilities/FileIO.cpp
+        source/utilities/FileIO.hpp
+        source/cl/CLProgram.cpp
+        source/cl/CLProgram.hpp)
 
 if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)
