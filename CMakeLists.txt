@@ -14,7 +14,7 @@ include_directories(source
 find_package(OpenCL REQUIRED)
 
 add_executable(Rabbit
-        source/main.cpp
+        source/Main.cpp
         external/cl2.hpp
         external/stb_image_writer.hpp
         source/utilities/FileIO.cpp
