@@ -15,10 +15,10 @@ namespace CL
 {
 
 RenderingContext::RenderingContext(const cl::Device& device, cl_context_properties* contex_prop,
-                                   unsigned int image_width, unsigned int image_height)
+                                   const SceneDescription& description)
 try
     : target_device(device), context(device, contex_prop, RenderingContext::ContextCallback),
-      target_image_width(image_width), target_image_height(image_height),
+      target_image_width(description.image_width), target_image_height(description.image_height),
       d_rays(context, target_image_width * target_image_height),
       d_intersections(context, target_image_width * target_image_height),
       d_samples(context, target_image_width * target_image_height),

@@ -5,7 +5,6 @@
 #ifndef RABBIT_CAMERA_HPP
 #define RABBIT_CAMERA_HPP
 
-#include <cl2.hpp>
 #include "Vector.hpp"
 
 namespace Rendering

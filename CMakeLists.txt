@@ -29,8 +29,6 @@ add_executable(Rabbit
         source/utilities/Common.hpp
         source/rendering/Camera.cpp
         source/rendering/Camera.hpp
-        source/scene/Scene.cpp
-        source/scene/Scene.hpp
         source/utilities/OpenCLInclude.hpp
         source/scene/SceneParser.cpp
         source/scene/SceneParser.hpp)

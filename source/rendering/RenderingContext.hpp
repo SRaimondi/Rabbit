@@ -6,6 +6,7 @@
 #define RABBIT_RENDERINGCONTEXT_HPP
 
 #include "RenderingData.hpp"
+#include "SceneParser.hpp"
 
 namespace Rendering
 {
@@ -18,8 +19,7 @@ class RenderingContext
 public:
     // Create a new rendering context given a device, context properties and the size of the image we are targeting
     RenderingContext(const cl::Device& device, cl_context_properties* contex_prop,
-                     unsigned int image_width, unsigned int image_height);
-
+                     const SceneDescription& scene_description);
 
 private:
     static void CL_CALLBACK
@@ -30,10 +30,9 @@ private:
     // OpenCL context
     cl::Context context;
 
-    // Size of the image we are rendering
+    // Target image width and height
     const unsigned int target_image_width, target_image_height;
 
-    // TODO Move this in a separate class maybe
     // Programs and kernels
 
     // Data for the kernels

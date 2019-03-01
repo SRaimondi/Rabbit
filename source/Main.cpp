@@ -1,4 +1,3 @@
-#include "SceneParser.hpp"
 #include "RenderingContext.hpp"
 
 #include <iostream>
@@ -88,7 +87,8 @@ int main(int argc, const char** argv)
         std::array<cl_context_properties, 3> context_properties{
             CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(selected_platform()),
             0 };
-        Rendering::CL::RenderingContext rendering_context{ selected_device, context_properties.data(), 512, 512 };
+        Rendering::CL::RenderingContext rendering_context{ selected_device, context_properties.data(),
+                                                           scene_description };
 
     }
     catch (const cl::Error& err)

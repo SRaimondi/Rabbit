@@ -45,8 +45,3 @@ SceneDescription SceneParser::ReadSceneDescription(const std::string& filename)
 
     return scene_description;
 }
-
-Scene SceneParser::CreateScene(const cl::Context& context, const SceneDescription& scene_description)
-{
-    return Scene(context, scene_description.loaded_spheres);
-}

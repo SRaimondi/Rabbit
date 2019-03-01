@@ -5,7 +5,21 @@
 #ifndef RABBIT_SCENEPARSER_HPP
 #define RABBIT_SCENEPARSER_HPP
 
-#include "Scene.hpp"
+#include <vector>
+#include <string>
+
+// Sphere struct layout
+struct Sphere
+{
+    // Center
+    float cx, cy, cz;
+    // Radius
+    float radius;
+
+    constexpr Sphere(float cx, float cy, float cz, float r) noexcept
+        : cx{ cx }, cy{ cy }, cz{ cz }, radius{ r }
+    {}
+};
 
 // Utility class that parses the given file and returns a SceneDescription object
 struct SceneDescription
@@ -27,9 +41,6 @@ class SceneParser
 public:
     // Read file and create SceneDescription
     static SceneDescription ReadSceneDescription(const std::string& filename);
-
-    // Generate Scene from a loaded scene description
-    static Scene CreateScene(const cl::Context& context, const SceneDescription& scene_description);
 };
 
 #endif //RABBIT_SCENEPARSER_HPP
