@@ -5,6 +5,8 @@
 #ifndef RABBIT_VECTOR_HPP
 #define RABBIT_VECTOR_HPP
 
+#include <cmath>
+
 // A very simple 3D vector implementation used on the host for geometry computations
 struct Vector3
 {
@@ -40,9 +42,42 @@ constexpr const Vector3 operator*(float lhs, const Vector3& rhs) noexcept
     return { lhs * rhs.x, lhs * rhs.y, lhs * rhs.z };
 }
 
+constexpr const Vector3 operator*(const Vector3& lhs, float rhs) noexcept
+{
+    return {lhs.x * rhs, lhs.y * rhs, lhs.z * rhs};
+}
+
+constexpr const Vector3 operator/(const Vector3& lhs, float rhs) noexcept
+{
+    const float inv_rhs = 1.f / rhs;
+    return inv_rhs * lhs;
+}
+
 constexpr const Vector3 Cross(const Vector3& lhs, const Vector3& rhs) noexcept
 {
-    return {}
+    return { lhs.y * rhs.z - lhs.z * rhs.y,
+             lhs.z * rhs.x - lhs.x * rhs.z,
+             lhs.x * rhs.y - lhs.y * rhs.x };
+}
+
+constexpr float Dot(const Vector3& lhs, const Vector3& rhs) noexcept
+{
+    return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+}
+
+constexpr float SquaredNorm(const Vector3& v) noexcept
+{
+    return Dot(v, v);
+}
+
+inline float Norm(const Vector3& v) noexcept
+{
+    return std::sqrt(SquaredNorm(v));
+}
+
+inline const Vector3 Normalize(const Vector3& v) noexcept
+{
+    return v / Norm(v);
 }
 
 #endif //RABBIT_VECTOR_HPP
