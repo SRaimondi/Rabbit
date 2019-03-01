@@ -5,8 +5,7 @@
 #ifndef RABBIT_RENDERINGCONTEXT_HPP
 #define RABBIT_RENDERINGCONTEXT_HPP
 
-#include "RenderingData.hpp"
-#include "SceneParser.hpp"
+#include "TileRenderingContext.hpp"
 
 namespace Rendering
 {
@@ -19,7 +18,8 @@ class RenderingContext
 public:
     // Create a new rendering context given a device, context properties and the size of the image we are targeting
     RenderingContext(const cl::Device& device, cl_context_properties* contex_prop,
-                     const SceneDescription& scene_description);
+                     const SceneDescription& scene_description,
+                     const Camera& camera);
 
 private:
     static void CL_CALLBACK
@@ -30,17 +30,8 @@ private:
     // OpenCL context
     cl::Context context;
 
-    // Target image width and height
-    const unsigned int target_image_width, target_image_height;
-
-    // Programs and kernels
-
-    // Data for the kernels
-    Rays d_rays;
-    Intersections d_intersections;
-    Samples d_samples;
-    Pixels d_pixels;
-    XOrShift d_xorshift_state;
+    // TileRenderingContext is responsible for rendering a certain tile of the image
+    TileRenderingContext tile_rendering_context;
 };
 
 } // CL namespace

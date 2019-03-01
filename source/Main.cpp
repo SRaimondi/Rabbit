@@ -14,7 +14,11 @@ int main(int argc, const char** argv)
     try
     {
         // Read scene description
-        const SceneDescription scene_description = SceneParser::ReadSceneDescription(argv[1]);
+        const SceneDescription scene_description{ SceneParser::ReadSceneDescription(argv[1]) };
+
+        // Create camera
+        const Rendering::Camera camera{ Vector3{ 0.f, 0.f, 10.f }, Vector3{ 0.f }, Vector3{ 0.f, 1.f, 0.f },
+                                        45.f, scene_description.image_width, scene_description.image_height };
 
         // Find all platforms
         std::vector<cl::Platform> platforms;
@@ -89,8 +93,8 @@ int main(int argc, const char** argv)
             CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(selected_platform()),
             0 };
         Rendering::CL::RenderingContext rendering_context{ selected_device, context_properties.data(),
-                                                           scene_description };
-
+                                                           scene_description, camera };
+        
     }
     catch (const cl::Error& err)
     {

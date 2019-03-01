@@ -15,23 +15,11 @@ namespace CL
 {
 
 RenderingContext::RenderingContext(const cl::Device& device, cl_context_properties* contex_prop,
-                                   const SceneDescription& description)
-try
-    : target_device(device), context(device, contex_prop, RenderingContext::ContextCallback),
-      target_image_width(description.image_width), target_image_height(description.image_height),
-      d_rays(context, target_image_width * target_image_height),
-      d_intersections(context, target_image_width * target_image_height),
-      d_samples(context, target_image_width * target_image_height),
-      d_pixels(context, target_image_width * target_image_height),
-      d_xorshift_state(context, target_image_width * target_image_height)
+                                   const SceneDescription& scene_description,
+                                   const Camera& camera)
+    : target_device{ device }, context{ device, contex_prop, RenderingContext::ContextCallback },
+      tile_rendering_context{ context, target_device, CL_QUEUE_PROFILING_ENABLE, scene_description, camera }
 {}
-catch (const cl::Error& err)
-{
-    std::ostringstream error_message;
-    error_message << "Error during RenderingContext creation\n" << err.what() << " "
-                  << ::CL::ErrorCodeToString(err.err());
-    throw std::runtime_error(error_message.str());
-}
 
 void RenderingContext::ContextCallback(const char* errinfo, const void*, size_t, void*)
 {
