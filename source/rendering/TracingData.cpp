@@ -93,7 +93,7 @@ Intersections::~Intersections() noexcept
 }
 
 Samples::Samples(cl_context context, unsigned int num_samples)
-    : num_samples(num_samples)
+    : num_samples{ num_samples }
 {
     cl_int err_code{ CL_SUCCESS };
     const size_t alloc_size_f = Size() * sizeof(cl_float);
@@ -142,7 +142,7 @@ Samples::~Samples() noexcept
 }
 
 XOrShift::XOrShift(cl_context context, unsigned int num_generators)
-    : num_generators(num_generators)
+    : num_generators{ num_generators }
 {
     cl_int err_code = CL_SUCCESS;
     state = clCreateBuffer(context, CL_MEM_READ_WRITE, Size() * sizeof(cl_uint), nullptr, &err_code);
