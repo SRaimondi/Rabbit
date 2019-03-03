@@ -5,7 +5,7 @@
 #ifndef RABBIT_RENDERINGCONTEXT_HPP
 #define RABBIT_RENDERINGCONTEXT_HPP
 
-#include "TileRenderingContext.hpp"
+#include "TileRendering.hpp"
 
 namespace Rendering
 {
@@ -30,8 +30,8 @@ private:
     // OpenCL context
     cl::Context context;
 
-    // TileRenderingContext is responsible for rendering a certain tile of the image
-    TileRenderingContext tile_rendering_context;
+    // TileRendering is responsible for rendering a certain tile of the image
+    TileRendering tile_rendering_context;
 };
 
 } // CL namespace

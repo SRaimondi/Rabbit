@@ -2,17 +2,17 @@
 // Created by Simon on 2019-03-01.
 //
 
-#include "TileRenderingContext.hpp"
+#include "TileRendering.hpp"
 
 namespace Rendering
 {
 namespace CL
 {
 
-TileRenderingContext::TileRenderingContext(const cl::Context& context, const cl::Device& device,
-                                           cl_command_queue_properties queue_properties,
-                                           const SceneDescription& scene_description,
-                                           const Camera& camera)
+TileRendering::TileRendering(const cl::Context& context, const cl::Device& device,
+                             cl_command_queue_properties queue_properties,
+                             const SceneDescription& scene_description,
+                             const Camera& camera)
     : command_queue{ context, device, queue_properties },
       tile_description{ scene_description.tile_width, scene_description.tile_height, scene_description.pixel_samples },
       d_rays{ context, tile_description.TotalSamples() },

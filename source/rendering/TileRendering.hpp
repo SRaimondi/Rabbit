@@ -2,8 +2,8 @@
 // Created by Simon on 2019-03-01.
 //
 
-#ifndef RABBIT_TILERENDERINGCONTEXT_HPP
-#define RABBIT_TILERENDERINGCONTEXT_HPP
+#ifndef RABBIT_TILERENDERING_HPP
+#define RABBIT_TILERENDERING_HPP
 
 #include "RenderingData.hpp"
 #include "SceneParser.hpp"
@@ -29,13 +29,13 @@ struct TileDescription
     }
 };
 
-class TileRenderingContext
+class TileRendering
 {
 public:
-    TileRenderingContext(const cl::Context& context, const cl::Device& device,
-                         cl_command_queue_properties queue_properties,
-                         const SceneDescription& scene_description,
-                         const Camera& camera);
+    TileRendering(const cl::Context& context, const cl::Device& device,
+                  cl_command_queue_properties queue_properties,
+                  const SceneDescription& scene_description,
+                  const Camera& camera);
 
     // Access TileDescription from the context
     const TileDescription& TileDesc() const noexcept
@@ -72,4 +72,4 @@ private:
 } // CL namespace
 } // Rendering namespace
 
-#endif //RABBIT_TILERENDERINGCONTEXT_HPP
+#endif //RABBIT_TILERENDERING_HPP
