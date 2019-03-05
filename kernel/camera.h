@@ -19,16 +19,12 @@ typedef struct
 } Camera;
 
 // Generate ray for the given pixel and sample offset
-inline void GenerateRay(__constant const Camera* camera,
-                        unsigned int px, unsigned int py,
-                        float sx, float sy,
-                        float3* const eye, float3* const dir)
+inline float3 GenerateRayDirection(__constant const Camera* camera,
+                                   unsigned int px, unsigned int py,
+                                   float sx, float sy)
 {
     const float vp_x = camera->left * (1.f - 2.f * (px + sx) * camera->inv_width);
     const float vp_y = camera->bottom * (1.f - 2.f * (py + sy) * camera->inv_height);
-
-    // Set the eye position
-    *eye = (float3)(camera->eye_x, camera->eye_y, camera->eye_z);
 
     // Load local base
     const float3 u = (float3)(camera->u_x, camera->u_y, camera->u_z);
@@ -36,7 +32,7 @@ inline void GenerateRay(__constant const Camera* camera,
     const float3 w = (float3)(camera->w_x, camera->w_y, camera->w_z);
 
     // Compute direction
-    *dir = normalize(vp_x * u + vp_y * v - w);
+    return normalize(vp_x * u + vp_y * v - w);
 }
 
 #endif // CAMERA_H

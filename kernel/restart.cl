@@ -35,14 +35,34 @@ __kernel void RestartSample(__constant const Camera* camera,
             const float sy = GenerateFloat(xorshift_state + linear_index);
 
             // Generate ray for the sample
-            float3 eye, dir;
-            GenerateRay(camera, pixel_x[linear_index], pixel_y[linear_index], sx, sy, &eye, &dir);
+            const float3 ray_dir = GenerateRay(camera, pixel_x[linear_index], pixel_y[linear_index], sx, sy);
 
+            // Store ray
+            ray_origin_x[linear_index] = camera->eye_x;
+            ray_origin_y[linear_index] = camera->eye_y;
+            ray_origin_z[linear_index] = camera->eye_z;
+            ray_direction_x[linear_index] = ray_dir.x;
+            ray_direction_y[linear_index] = ray_dir.y;
+            ray_direction_z[linear_index] = ray_dir.z;
 
-            // Reset primitive index
+            // Reset extent and depth
+            ray_extent[linear_index] = MAXFLOAT;
+            ray_depth[linear_index] = 0;
+
+            // Reset the primitive index, meaning that we have not hit anything
             primitive_index[linear_index] = INVALID_PRIM_INDEX;
 
-            
+            // Reset sample data
+            Li_r[linear_index] = 0.f;
+            Li_g[linear_index] = 0.f;
+            Li_b[linear_index] = 0.f;
+            beta_r[linear_index] = 1.f;
+            beta_g[linear_index] = 1.f;
+            beta_b[linear_index] = 1.f;
+
+            // Store sample position in the pixel
+            sample_x[linear_index] = sx;
+            sample_y[linear_index] = sy;            
         }
     }
 }
