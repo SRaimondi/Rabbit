@@ -32,4 +32,37 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
     return temp.f;
 }
 
+// Solve quadratic equation
+inline bool SolveQuadratic(float a, float b, float c, float* t0, float* t1)
+{
+    const float discr = b * b - 4.f * a * c;
+    if (discr < 0.f)
+    {
+        return false;
+    }
+
+    const float discr_root = sqrt(discr);
+    float q;
+    if (b < 0.f)
+    {
+        q = -0.5f * (b - discr_root);
+    }
+    else
+    {
+        q = -0.5f * (b + discr_root);
+    }
+
+    t0 = q / a;
+    t1 = c / q;
+
+    if (t0 > t1)
+    {
+        const float temp = t0;
+        t0 = t1;
+        t1 = temp;
+    }
+
+    return true;
+}
+
 #endif // KERNEL_COMMON_H
