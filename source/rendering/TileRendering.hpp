@@ -22,10 +22,16 @@ struct TileDescription
     // Samples per pixel
     const unsigned int pixel_samples;
 
+    // Compute the total number of pixels in the tile
+    unsigned int TotalPixels() const noexcept
+    {
+        return tile_width * tile_height;
+    }
+
     // Compute the total number of samples in the tile
     unsigned int TotalSamples() const noexcept
     {
-        return tile_width * tile_height * pixel_samples;
+        return TotalPixels() * pixel_samples;
     }
 };
 
