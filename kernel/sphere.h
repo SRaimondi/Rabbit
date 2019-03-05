@@ -70,6 +70,9 @@ inline bool IntersectRaySphere(const Sphere sphere,
     return true;
 }
 
+// Small tollerance one for degenerate uv coordinates
+#define EPS 0.0001f
+
 // Fill intersection for given ray and intersection parameter
 inline Intersection FillIntersection(const Sphere sphere,
                                      float ray_origin_x, float ray_origin_y, float ray_origin_z,
@@ -87,8 +90,23 @@ inline Intersection FillIntersection(const Sphere sphere,
     isect.normal_y = (isect.hit_point_y - sphere.center_y) * inv_radius;
     isect.normal_z = (isect.hit_point_z - sphere.center_z) * inv_radius;
 
-    // Compute UVs TODO
-    
+    // Compute UVs
+    if (fabs(isect.hit_point_x) < EPS && fabs(isect.hit_point_z) < EPS)
+    {
+        isect.uv_s = 0.f;
+        isect.uv_t = (isect.hit_point_y - sphere.center_y) > 0.f ? 0.f : 1.f;
+    }
+    else
+    {   
+        float phi = atan2(isect.hit_point_z, isect.hit_point_x);
+        if (phi < 0.f)
+        {
+            phi += 2.f * M_PI_F;
+        }
+        isect.uv_s = phi * 0.5f * M_1_PI_F;
+        isect.uv_t = acos(isect.hit_point_y / sphere.radius) * M_1_PI_F;
+    }
+
     return isect;
 }
 
