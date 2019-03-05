@@ -1,5 +1,5 @@
-#ifndef KERNEL_COMMON
-#define KERNEL_COMMON
+#ifndef KERNEL_COMMON_H
+#define KERNEL_COMMON_H
 
 // Invalid primitive index
 #define MAX_UINT                4294967295u
@@ -32,4 +32,4 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
     return temp.f;
 }
 
-#endif // KERNEL_COMMON
+#endif // KERNEL_COMMON_H
