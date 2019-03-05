@@ -16,7 +16,7 @@ __kernel void RestartSample(__constant const Camera* camera,
                             __global const unsigned int* pixel_x, __global const unsigned int* pixel_y,
                             __global float* sample_x, __global float* sample_y,
                             // XORSHIFT state to generate pixel sample
-                            __global unsigned int* xorshift_state
+                            __global unsigned int* xorshift_state,
                             // Size of the tile
                             unsigned int tile_width, unsigned int tile_height)
 {
@@ -35,7 +35,7 @@ __kernel void RestartSample(__constant const Camera* camera,
             const float sy = GenerateFloat(xorshift_state + linear_index);
 
             // Generate ray for the sample
-            const float3 ray_dir = GenerateRay(camera, pixel_x[linear_index], pixel_y[linear_index], sx, sy);
+            const float3 ray_dir = GenerateRayDirection(camera, pixel_x[linear_index], pixel_y[linear_index], sx, sy);
 
             // Store ray
             ray_origin_x[linear_index] = camera->eye_x;

@@ -36,6 +36,6 @@ __kernel void Initialise(
         const unsigned int linear_pixel_index = tid / samples_per_pixel;
         const unsigned int py = linear_pixel_index / tile_width;
         pixel_x[tid] = linear_pixel_index - py * tile_width;
-        pixel_y[linear_index] = py;
+        pixel_y[tid] = py;
     }    
 }
