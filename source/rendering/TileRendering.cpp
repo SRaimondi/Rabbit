@@ -25,7 +25,8 @@ TileRenderingKernels::TileRenderingKernels(const cl::Context& context,
                                            const std::pair<const std::string, const std::string>& update_desc,
                                            const std::pair<const std::string, const std::string>& deposit_desc)
 {
-    const std::string build_options{ "-cl-std=CL1.2 -cl-mad-enable -cl-finite-math-only  -cl-denorms-are-zero -I./kernel" };
+    const std::string build_options{
+        "-cl-std=CL1.2 -cl-mad-enable -cl-finite-math-only  -cl-denorms-are-zero -I./kernel" };
 
     // For each string pair, crete the program and initialise the kernel from it
     const cl::Program init_program{ context, IO::ReadFile(initialisation_desc.first) };
@@ -60,13 +61,13 @@ TileRendering::TileRendering(const cl::Context& context, const cl::Device& devic
       d_spheres{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, num_spheres * sizeof(Sphere),
                  const_cast<Sphere*>(scene_description.loaded_spheres.data()) },
       d_camera{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(Camera), const_cast<Camera*>(&camera) },
-      // TODO This should come from some config file
+    // TODO This should come from some config file
       kernels{ context,
                std::make_pair("./kernel/initialisation.cl", "Initialise"),
                std::make_pair("./kernel/restart.cl", "RestartSample"),
                std::make_pair("./kernel/intersect.cl", "Intersect"),
                std::make_pair("./kernel/update_radiance.cl", "UpdateRadiance"),
-               std::make_pair("./kernel/deposit_sample.cl", "DepositSamples")}
+               std::make_pair("./kernel/deposit_sample.cl", "DepositSamples") }
 {}
 
 } // CL namespace
