@@ -12,7 +12,7 @@ namespace Rendering
 namespace CL
 {
 
-// This class is responsible for managing the resources sued during rendering
+// This class is responsible for managing the resources used during rendering
 class RenderingContext
 {
 public:

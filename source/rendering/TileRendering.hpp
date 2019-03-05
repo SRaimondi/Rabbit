@@ -29,6 +29,45 @@ struct TileDescription
     }
 };
 
+// Tile rendering data manager struct
+struct TileRenderingData
+{
+    // Device rays, one for each sample for each pixel
+    Rays d_rays;
+    // Intersection information
+    Intersections d_intersections;
+    // Information on the incoming radiance for each sample
+    Samples d_samples;
+    // Accumulated value and filter weight for each pixel in the tile
+    Pixels d_pixels;
+    // XOrShift state for random number generation
+    XOrShift d_xorshift_state;
+
+    TileRenderingData(const cl::Context& context, const TileDescription& tile_description);
+};
+
+// Tile rendering kernels
+struct TileRenderingKernels
+{
+    // Data initialisation kernel
+    cl::Kernel initialisation;
+    // Restart sample kernel
+    cl::Kernel restart_sample;
+    // Intersect sample's ray with scene
+    cl::Kernel intersect_scene;
+    // Update sample radiance kernel
+    cl::Kernel update_radiance;
+    // Deposit ray computed radiance to pixels
+    cl::Kernel deposit_sample;
+
+    TileRenderingKernels(const cl::Context& context,
+                         const std::pair<const std::string, const std::string>& initialisation_desc,
+                         const std::pair<const std::string, const std::string>& restart_desc,
+                         const std::pair<const std::string, const std::string>& intersect_desc,
+                         const std::pair<const std::string, const std::string>& update_desc,
+                         const std::pair<const std::string, const std::string>& deposit_desc);
+};
+
 class TileRendering
 {
 public:
@@ -50,23 +89,19 @@ private:
     // Description of the tile
     const TileDescription tile_description;
 
-    // Device rays, one for each sample for each pixel
-    Rays d_rays;
-    // Intersection information
-    Intersections d_intersections;
-    // Information on the incoming radiance for each sample
-    Samples d_samples;
-    // Accumulated value and filter weight for each pixel in the tile
-    Pixels d_pixels;
-    // XOrShift state for random number generation
-    XOrShift d_xorshift_state;
+    // Rendering data
+    TileRenderingData rendering_data;
 
+    // FIXME This are here for the moment
     // Buffer with the spheres in the scene
     const unsigned int num_spheres;
     cl::Buffer d_spheres;
 
     // Buffer with the camera used to render the scene
     cl::Buffer d_camera;
+
+    // Tile rendering kernels
+    TileRenderingKernels kernels;
 };
 
 } // CL namespace
