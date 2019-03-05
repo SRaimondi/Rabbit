@@ -3,7 +3,6 @@
 //
 
 #include "RenderingContext.hpp"
-#include "CLError.hpp"
 
 #include <iostream>
 #include <sstream>

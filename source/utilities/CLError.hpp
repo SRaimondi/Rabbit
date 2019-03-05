@@ -5,11 +5,7 @@
 #ifndef RABBIT_CLERROR_HPP
 #define RABBIT_CLERROR_HPP
 
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
+#include "OpenCLInclude.hpp"
 
 #include <string>
 

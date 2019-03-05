@@ -11,7 +11,11 @@ include_directories(source
         source/utilities
         external)
 
-find_package(OpenCL REQUIRED)
+if (CYGWIN)
+
+else()
+    find_package(OpenCL REQUIRED)
+endif(CYGWIN)
 
 add_executable(Rabbit
         source/Main.cpp
@@ -39,4 +43,9 @@ if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)
 endif(APPLE)
 
-target_link_libraries(Rabbit OpenCL::OpenCL)
+if (CYGWIN)
+    target_include_directories(Rabbit PRIVATE $ENV{CUDA_PATH}/include)
+    target_link_libraries(Rabbit PRIVATE $ENV{CUDA_PATH}/lib/x64/OpenCL.lib)
+else ()
+    target_link_libraries(Rabbit OpenCL::OpenCL)
+endif(CYGWIN)
