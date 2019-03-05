@@ -21,7 +21,7 @@ __kernel void Initialise(
     {
         // Set the ray_depth to RAY_DONE_DEPTH so the first call to the restart kernel sets all rays up
         ray_depth[tid] = RAY_DONE_DEPTH;
-        
+
         // Seed the xorshift to some value
         xorshift_state[tid] = XORSHIFT_STATE_START + tid;
 
@@ -32,7 +32,7 @@ __kernel void Initialise(
         filter_weight[tid] = 0.f;
 
         // Compute coordiantes of the pixel
-        // Samples are stored along width and packed for each pixel
+        // Samples are stored along width and packed for each pixel by samples_per_pixel
         const unsigned int linear_pixel_index = tid / samples_per_pixel;
         const unsigned int py = linear_pixel_index / tile_width;
         pixel_x[tid] = linear_pixel_index - py * tile_width;

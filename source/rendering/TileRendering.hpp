@@ -83,7 +83,7 @@ public:
                   const Camera& camera);
 
     // Access TileDescription from the context
-    const TileDescription& TileDesc() const noexcept
+    const TileDescription& GetTileDescription() const noexcept
     {
         return tile_description;
     }
