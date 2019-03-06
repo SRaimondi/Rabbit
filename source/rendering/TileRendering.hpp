@@ -39,7 +39,7 @@ struct TileDescription
     }
 };
 
-// Tile rendering data manager struct
+// Tile rendering data storage
 struct TileRenderingData
 {
     // Device rays, one for each sample for each pixel
@@ -81,7 +81,7 @@ struct TileRenderingData
 class TileRendering
 {
 public:
-    TileRendering(const cl::Context& context, const cl::Device& device,
+    TileRendering(cl_context context, cl_device_id device,
                   cl_command_queue_properties queue_properties,
                   const SceneDescription& scene_description,
                   const Camera& camera);
@@ -94,7 +94,7 @@ public:
 
 private:
     // Command queue where the commands are issued for the tile
-    cl::CommandQueue command_queue;
+    cl_command_queue command_queue;
 
     // Description of the tile
     const TileDescription tile_description;
@@ -105,13 +105,13 @@ private:
     // FIXME This are here for the moment
     // Buffer with the spheres in the scene
     const unsigned int num_spheres;
-    cl::Buffer d_spheres;
+    // cl::Buffer d_spheres;
 
     // Buffer with the camera used to render the scene
-    cl::Buffer d_camera;
+    // cl::Buffer d_camera;
 
     // Tile rendering kernels
-    TileRenderingKernels kernels;
+    // TileRenderingKernels kernels;
 };
 
 } // CL namespace

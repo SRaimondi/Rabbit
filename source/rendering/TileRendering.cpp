@@ -50,25 +50,27 @@ TileRenderingData::TileRenderingData(cl_context context, const TileDescription& 
 //    deposit_sample = cl::Kernel{ deposit_program, deposit_desc.second.c_str() };
 //}
 
-TileRendering::TileRendering(const cl::Context& context, const cl::Device& device,
+TileRendering::TileRendering(cl_context context, cl_device_id device,
                              cl_command_queue_properties queue_properties,
                              const SceneDescription& scene_description,
                              const Camera& camera)
-    : command_queue{ context, device, queue_properties },
+    : command_queue{ nullptr },
       tile_description{ scene_description.tile_width, scene_description.tile_height, scene_description.pixel_samples },
       rendering_data{ context, tile_description },
-      num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) },
-      d_spheres{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, num_spheres * sizeof(Sphere),
-                 const_cast<Sphere*>(scene_description.loaded_spheres.data()) },
-      d_camera{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(Camera), const_cast<Camera*>(&camera) },
-    // TODO This should come from some config file
-      kernels{ context,
-               std::make_pair("./kernel/initialisation.cl", "Initialise"),
-               std::make_pair("./kernel/restart.cl", "RestartSample"),
-               std::make_pair("./kernel/intersect.cl", "Intersect"),
-               std::make_pair("./kernel/update_radiance.cl", "UpdateRadiance"),
-               std::make_pair("./kernel/deposit_sample.cl", "DepositSamples") }
-{}
+      num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) }
+//      d_spheres{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, num_spheres * sizeof(Sphere),
+//                 const_cast<Sphere*>(scene_description.loaded_spheres.data()) },
+//      d_camera{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(Camera), const_cast<Camera*>(&camera) },
+//    // TODO This should come from some config file
+//      kernels{ context,
+//               std::make_pair("./kernel/initialisation.cl", "Initialise"),
+//               std::make_pair("./kernel/restart.cl", "RestartSample"),
+//               std::make_pair("./kernel/intersect.cl", "Intersect"),
+//               std::make_pair("./kernel/update_radiance.cl", "UpdateRadiance"),
+//               std::make_pair("./kernel/deposit_sample.cl", "DepositSamples") }
+{
+
+}
 
 } // CL namespace
 } // Rendering namespace

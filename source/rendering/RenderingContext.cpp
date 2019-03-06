@@ -13,10 +13,10 @@ namespace Rendering
 namespace CL
 {
 
-RenderingContext::RenderingContext(const cl::Device& device, cl_context_properties* contex_prop,
+RenderingContext::RenderingContext(cl_device_id device, cl_context_properties* contex_prop,
                                    const SceneDescription& scene_description,
                                    const Camera& camera)
-    : target_device{ device }, context{ device, contex_prop, RenderingContext::ContextCallback },
+    : target_device{ device }, context{ nullptr },
       tile_rendering_context{ context, target_device, CL_QUEUE_PROFILING_ENABLE, scene_description, camera }
 {}
 

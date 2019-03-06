@@ -17,7 +17,7 @@ class RenderingContext
 {
 public:
     // Create a new rendering context given a device, context properties and the size of the image we are targeting
-    RenderingContext(const cl::Device& device, cl_context_properties* contex_prop,
+    RenderingContext(cl_device_id device, cl_context_properties* contex_prop,
                      const SceneDescription& scene_description,
                      const Camera& camera);
 
@@ -26,9 +26,9 @@ private:
     ContextCallback(const char* errinfo, const void* private_info, size_t cb, void* user_data);
 
     // Device where we run our rendering process, this is passed in from outside
-    cl::Device target_device;
-    // OpenCL context
-    cl::Context context;
+    cl_device_id target_device;
+    // OpenCL created context for the given device
+    cl_context context;
 
     // TileRendering is responsible for rendering a certain tile of the image
     TileRendering tile_rendering_context;
