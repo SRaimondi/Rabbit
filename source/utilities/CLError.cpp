@@ -4,6 +4,9 @@
 
 #include "CLError.hpp"
 
+#include <stdexcept>
+#include <sstream>
+
 namespace CL
 {
 
@@ -96,6 +99,18 @@ std::string ErrorCodeToString(cl_int err_code) noexcept
 #endif
         default:
             return "UNKNOWN ERROR";
+    }
+}
+
+void CheckCLErrorCode(cl_int err_code, int line, const char* file)
+{
+    if (err_code != CL_SUCCESS)
+    {
+        std::ostringstream err;
+        err << file << ": " << line << "\n";
+        err << "OpenCL error: " << ErrorCodeToString(err_code);
+
+        throw std::runtime_error(err.str());
     }
 }
 
