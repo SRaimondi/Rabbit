@@ -12,8 +12,7 @@ include_directories(source
         external)
 
 # Try to find OpenCL directly
-find_package(OpenCL REQUIRED)
-
+find_package(OpenCL)
 
 add_executable(Rabbit
         external/stb_image_writer.hpp
@@ -33,10 +32,18 @@ add_executable(Rabbit
         source/scene/SceneParser.hpp
         source/rendering/TileRendering.cpp
         source/rendering/TileRendering.hpp
-        source/Main.cpp source/rendering/RenderingKernels.cpp source/rendering/RenderingKernels.hpp)
+        source/Main.cpp
+        source/rendering/RenderingKernels.cpp
+        source/rendering/RenderingKernels.hpp)
 
 if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)
 endif(APPLE)
 
-target_link_libraries(Rabbit OpenCL::OpenCL)
+if (NOT OpenCL_FOUND)
+    target_include_directories(Rabbit PRIVATE $ENV{CUDA_PATH}/include)
+    target_link_libraries(Rabbit PRIVATE $ENV{CUDA_PATH}/lib/x64/OpenCL.lib)
+else()
+    target_link_libraries(Rabbit OpenCL::OpenCL)
+endif()
+

@@ -4,6 +4,7 @@
 
 #include <array>
 #include <iostream>
+#include <memory>
 
 int main(int argc, const char** argv)
 {
@@ -64,7 +65,7 @@ int main(int argc, const char** argv)
             CL_CHECK_CALL(clGetPlatformInfo(selected_platform, CL_PLATFORM_NAME,
                                             platform_name_size, selected_platform_name.get(),
                                             nullptr));
-            std::cout << "Found one platform: " << selected_platform_name << "\n";
+            std::cout << "Found one platform: " << selected_platform_name.get() << "\n";
         }
 
         // Select device from platform
@@ -90,7 +91,7 @@ int main(int argc, const char** argv)
                 CL_CHECK_CALL(clGetDeviceInfo(device, CL_DEVICE_NAME, 0, nullptr, &device_name_size));
                 auto device_name{ std::make_unique<char[]>(device_name_size) };
                 CL_CHECK_CALL(clGetDeviceInfo(device, CL_DEVICE_NAME, device_name_size, device_name.get(), nullptr));
-                std::cout << "[" << device_index++ << "]: " << device_name << "\n";
+                std::cout << "[" << device_index++ << "]: " << device_name.get() << "\n";
             }
             do
             {
@@ -108,7 +109,7 @@ int main(int argc, const char** argv)
             auto selected_device_name{ std::make_unique<char[]>(device_name_size) };
             CL_CHECK_CALL(clGetDeviceInfo(selected_device, CL_DEVICE_NAME, device_name_size, selected_device_name.get(),
                                           nullptr));
-            std::cout << "Found one device: " << selected_device_name << "\n";
+            std::cout << "Found one device: " << selected_device_name.get() << "\n";
         }
 
         // Create OpenCL context

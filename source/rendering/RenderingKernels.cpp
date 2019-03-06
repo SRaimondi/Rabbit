@@ -7,6 +7,7 @@
 #include "FileIO.hpp"
 
 #include <iostream>
+#include <memory>
 
 namespace Rendering
 {
@@ -31,7 +32,7 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device,
 
         // Build program
         const std::string program_options{ "-cl-std=CL1.2 -cl-mad-enable -cl-no-signed-zeros" };
-        err_code = clBuildProgram(kernel_program, 1, &device, program_options.c_str(), nullptr, nullptr));
+        err_code = clBuildProgram(kernel_program, 1, &device, program_options.c_str(), nullptr, nullptr);
         if (err_code != CL_SUCCESS)
         {
             // We have an error in the program build
@@ -44,7 +45,7 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device,
 
             // Release program and throw exception with log
             CL_CHECK_CALL(clReleaseProgram(kernel_program));
-            throw std::runtime_error(std::string(program_build_log.get()));
+            throw std::runtime_error{ program_build_log.get() };
         }
 
         // Get kernels from program
