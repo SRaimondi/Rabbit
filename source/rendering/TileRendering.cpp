@@ -13,24 +13,16 @@ namespace Rendering
 namespace CL
 {
 
-TileRenderingData::TileRenderingData(cl_context context, const TileDescription& tile_description)
-    : d_rays{ context, tile_description.TotalSamples() },
-      d_intersections{ context, tile_description.TotalSamples() },
-      d_samples{ context, tile_description.TotalSamples() },
-      d_pixels{ context, tile_description.TotalPixels() },
-      d_xorshift_state{ context, tile_description.TotalSamples() }
-{}
-
 TileRendering::TileRendering(cl_context context, cl_device_id device,
                              cl_command_queue_properties queue_properties,
                              const SceneDescription& scene_description,
                              const Camera& camera)
     : command_queue{ nullptr },
       tile_description{ scene_description.tile_width, scene_description.tile_height, scene_description.pixel_samples },
-      rendering_data{ context, tile_description },
+      rendering_data{ context, tile_description.TotalPixels(), tile_description.TotalSamples() },
       num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) }, d_spheres{ nullptr },
       d_camera{ nullptr },
-      rendering_kernel{ context, device, "./kernel/rendering_kernel.cl" }
+      rendering_kernel{ context, device, "./kernel/rendering_kernel.cl", rendering_data }
 {
     cl_int err_code{ CL_SUCCESS };
 

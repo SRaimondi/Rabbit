@@ -40,23 +40,6 @@ struct TileDescription
     }
 };
 
-// Tile rendering data storage
-struct TileRenderingData
-{
-    // Device rays, one for each sample for each pixel
-    Rays d_rays;
-    // Intersection information
-    Intersections d_intersections;
-    // Information on the incoming radiance for each sample
-    Samples d_samples;
-    // Accumulated value and filter weight for each pixel in the tile
-    Pixels d_pixels;
-    // XOrShift state for random number generation
-    XOrShift d_xorshift_state;
-
-    TileRenderingData(cl_context context, const TileDescription& tile_description);
-};
-
 class TileRendering
 {
 public:
@@ -84,7 +67,7 @@ private:
     const TileDescription tile_description;
 
     // Rendering data
-    TileRenderingData rendering_data;
+    RenderingData rendering_data;
 
     // Buffer with the spheres in the scene
     const unsigned int num_spheres;

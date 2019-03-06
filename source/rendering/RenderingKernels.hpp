@@ -5,11 +5,7 @@
 #ifndef RABBIT_RENDERINGKERNELS_HPP
 #define RABBIT_RENDERINGKERNELS_HPP
 
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
+#include "RenderingData.hpp"
 
 #include <string>
 
@@ -22,7 +18,8 @@ namespace CL
 class RenderingKernels
 {
 public:
-    RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename);
+    RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename,
+                     const RenderingData& rendering_data);
 
     ~RenderingKernels() noexcept;
 
@@ -41,6 +38,12 @@ public:
 private:
     // Load kernel program source and build program
     cl_program BuildProgram(cl_context context, cl_device_id device, const std::string& kernel_filename) const;
+
+    // Setup kernel from program
+    void SetupKernels(cl_program kernel_program);
+
+    // Set kernel arguments
+    void SetKernelArguments(const RenderingData& rendering_data);
 
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;
