@@ -29,7 +29,8 @@ TileRendering::TileRendering(cl_context context, cl_device_id device,
       tile_description{ scene_description.tile_width, scene_description.tile_height, scene_description.pixel_samples },
       rendering_data{ context, tile_description },
       num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) }, d_spheres{ nullptr },
-      d_camera{ nullptr }
+      d_camera{ nullptr },
+      rendering_kernel{ context, device, "./kernel/rendering_kernel.cl" }
 {
     cl_int err_code{ CL_SUCCESS };
 

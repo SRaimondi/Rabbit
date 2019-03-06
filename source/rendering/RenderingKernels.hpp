@@ -39,6 +39,9 @@ public:
     cl_kernel deposit_samples_kernel;
 
 private:
+    // Load kernel program source and build program
+    cl_program BuildProgram(cl_context context, cl_device_id device, const std::string& kernel_filename) const;
+
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;
 };

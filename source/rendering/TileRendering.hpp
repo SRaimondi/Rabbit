@@ -6,6 +6,7 @@
 #define RABBIT_TILERENDERING_HPP
 
 #include "RenderingData.hpp"
+#include "RenderingKernels.hpp"
 #include "SceneParser.hpp"
 #include "Camera.hpp"
 
@@ -92,8 +93,8 @@ private:
     // Buffer with the camera used to render the scene
     cl_mem d_camera;
 
-    // Tile rendering kernels
-    // TileRenderingKernels kernels;
+    // Rendering kernels
+    RenderingKernels rendering_kernel;
 };
 
 } // CL namespace
