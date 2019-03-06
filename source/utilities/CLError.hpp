@@ -24,13 +24,15 @@ void CheckCLErrorCode(cl_int err_code, int line, const char* file);
 
 // Macro to check and OpenCL error
 #ifndef NDEBUG
+// Use this for function calls
 #define CL_CHECK_CALL(call)     CL::CheckCLErrorCode(call, __LINE__, __FILE__)
-#define CL_CHECK_STATUS(status) CL::CheckCLErrorCode(call, __LINE__, __FILE__)
+// Use this to check a status
+#define CL_CHECK_STATUS(status) CL::CheckCLErrorCode(status, __LINE__, __FILE__)
 #else
-#define CL_CHECK_CALL(call) call
+#define CL_CHECK_CALL(call) static_cast<void>(call)
 #define CL_CHECK_STATUS(status)
 #endif
 
-}
+} // CL namespace
 
 #endif //RABBIT_CLERROR_HPP
