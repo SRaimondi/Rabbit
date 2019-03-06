@@ -4,6 +4,7 @@
 
 #include "TileRendering.hpp"
 #include "FileIO.hpp"
+#include "CLError.hpp"
 
 namespace Rendering
 {
@@ -57,9 +58,8 @@ TileRendering::TileRendering(cl_context context, cl_device_id device,
     : command_queue{ nullptr },
       tile_description{ scene_description.tile_width, scene_description.tile_height, scene_description.pixel_samples },
       rendering_data{ context, tile_description },
-      num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) }
-//      d_spheres{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, num_spheres * sizeof(Sphere),
-//                 const_cast<Sphere*>(scene_description.loaded_spheres.data()) },
+      num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) },
+      d_spheres{ nullptr }
 //      d_camera{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(Camera), const_cast<Camera*>(&camera) },
 //    // TODO This should come from some config file
 //      kernels{ context,
@@ -69,7 +69,16 @@ TileRendering::TileRendering(cl_context context, cl_device_id device,
 //               std::make_pair("./kernel/update_radiance.cl", "UpdateRadiance"),
 //               std::make_pair("./kernel/deposit_sample.cl", "DepositSamples") }
 {
+    cl_int err_code = CL_SUCCESS;
 
+    // Create command queue
+    command_queue = clCreateCommandQueue(context, device, queue_properties, &err_code);
+    CL_CHECK_STATUS(err_code);
+
+    // Create spheres buffer
+    d_spheres = clCreateBuffer(context, CL_MEM_READ_ONLY, num_spheres * sizeof(Sphere),
+                               const_cast<Sphere*>(scene_description.loaded_spheres.data()), &err_code);
+    CL_CHECK_STATUS(err_code);
 }
 
 } // CL namespace

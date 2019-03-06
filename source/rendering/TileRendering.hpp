@@ -93,7 +93,7 @@ public:
     }
 
 private:
-    // Command queue where the commands are issued for the tile
+    // Command queue where the commands are issued for the tile rendering
     cl_command_queue command_queue;
 
     // Description of the tile
@@ -102,10 +102,9 @@ private:
     // Rendering data
     TileRenderingData rendering_data;
 
-    // FIXME This are here for the moment
     // Buffer with the spheres in the scene
     const unsigned int num_spheres;
-    // cl::Buffer d_spheres;
+    cl_mem d_spheres;
 
     // Buffer with the camera used to render the scene
     // cl::Buffer d_camera;
