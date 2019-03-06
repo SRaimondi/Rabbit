@@ -11,12 +11,37 @@
 #include <CL/cl.h>
 #endif
 
+#include <string>
+
 namespace Rendering
 {
 namespace CL
 {
 
+// This class is responsible for loading the kernel from a single file
+class RenderingKernels
+{
+public:
+    RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename);
 
+    ~RenderingKernels() noexcept;
+
+    // Data initialisation
+    cl_kernel initialisation_kernel;
+
+    // Setup samples
+    cl_kernel setup_samples_kernel;
+
+    // Intersect samples ray with spheres
+    cl_kernel intersect_kernel;
+
+    // Deposit the sample comping radiance to the pixel it belongs to
+    cl_kernel deposit_samples_kernel;
+
+private:
+    // Cleanup OpenCL resource without throwing
+    void Cleanup() noexcept;
+};
 
 } // CL namespace
 } // Rendering namespace
