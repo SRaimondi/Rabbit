@@ -33,9 +33,9 @@ int main(int argc, const char** argv)
 
         // Select platform by name
         cl_platform_id selected_platform;
-        if (platforms.size() > 1)
+        if (num_platforms > 1)
         {
-            std::size_t selected_platform_index{ platforms.size() };
+            std::size_t selected_platform_index{ num_platforms };
             std::cout << "Select platform by corresponding index\n";
             int platform_index{ 0 };
             for (auto platform : platforms)
@@ -52,7 +52,7 @@ int main(int argc, const char** argv)
                 std::cout << "Platform index: ";
                 std::cin >> selected_platform_index;
             }
-            while (selected_platform_index >= platforms.size());
+            while (selected_platform_index >= num_platforms);
             selected_platform = platforms[selected_platform_index];
         }
         else
@@ -79,9 +79,9 @@ int main(int argc, const char** argv)
 
         // Select device by name
         cl_device_id selected_device;
-        if (devices.size() > 1)
+        if (num_devices > 1)
         {
-            std::size_t selected_device_index{ devices.size() };
+            std::size_t selected_device_index{ num_devices };
             std::cout << "Select device by corresponding index\n";
             int device_index{ 0 };
             for (auto device : devices)
@@ -97,7 +97,7 @@ int main(int argc, const char** argv)
                 std::cout << "Device index: ";
                 std::cin >> selected_device_index;
             }
-            while (selected_device_index >= devices.size());
+            while (selected_device_index >= num_devices);
             selected_device = devices[selected_device_index];
         }
         else
