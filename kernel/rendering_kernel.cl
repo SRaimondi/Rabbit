@@ -222,6 +222,9 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
                           __constant const Camera* camera,
                           __global unsigned int* pixel_x, __global unsigned int* pixel_y,
                           __global float* sample_offset_x, __global float* sample_offset_y,
+                          __global float* ray_origin_x, __global float* ray_origin_y, __global float* ray_origin_z,
+                          __global float* ray_direction_x, __global float* ray_direction_y, __global float* ray_direction_z, 
+                          __global unsigned int* ray_depth,
                           unsigned int tile_start_x, unsigned int tile_start_y,
                           unsigned int tile_width, unsigned int tile_height,
                           unsigned int samples_per_pixel)
@@ -232,15 +235,62 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
         // First this is to initialise the random number generator state
         xorshift_state[tid] = XORSHIFT_STATE_START + tid;
 
-        // Next, we compute the coordinate of the pixel
+        // Compute the coordinates of the pixel
         const unsigned int linear_pixel_index = tid / samples_per_pixel;
-        const unsigned int py = linear_pixel_index / tile_width;
-        pixel_x[tid] = tile_start_x + linear_pixel_index - py * tile_width;
-        pixel_y[tid] = tile_start_y + py;
+        const unsigned int tile_py = linear_pixel_index / tile_width;
+        const unsigned int tile_px = linear_pixel_index - tile_py * tile_width;
+        const unsigned int px = tile_start_x + tile_px;
+        const unsigned int py = tile_start_y + tile_py;
 
-        // Finally, generate a random offset in the pixel for each sample
+        // Store
+        pixel_x[tid] = px;
+        pixel_y[tid] = py;
+
+        // Generate a random offset in the pixel for each sample
         // This is pure random now, next would be to stratify the samples
-        sample_offset_x[tid] = GenerateFloat(xorshift_state + tid);
-        sample_offset_y[tid] = GenerateFloat(xorshift_state + tid);
+        const float sx = GenerateFloat(xorshift_state + tid);
+        const float sy = GenerateFloat(xorshift_state + tid);
+
+        // Store
+        sample_offset_x[tid] = sx;
+        sample_offset_y[tid] = sy;
+
+        // Setup the rays for each sample
+        ray_origin_x[tid] = camera->eye_x;
+        ray_origin_y[tid] = camera->eye_y;
+        ray_origin_z[tid] = camera->eye_z;
+
+        // Generate direction and store
+        const float3 ray_direction = GenerateRayDirection(camera, px, py, sx, sy);
+        ray_direction_x[tid] = ray_direction.x;
+        ray_direction_y[tid] = ray_direction.y;
+        ray_direction_z[tid] = ray_direction.z;
+
+        // Reset depth
+        ray_depth[tid] = 0;
     }
 }
+
+/*
+ * Samples setup kernel
+ */
+__kernel void SetupSamples()
+{
+
+}
+
+/*
+ * Intersect kernel
+ */
+ __kernel void Intersect()
+ {
+
+ }
+
+ /*
+  * Deposit samples on raster kernel
+  */
+  __kernel void DepositSamples()
+  {
+      
+  }
