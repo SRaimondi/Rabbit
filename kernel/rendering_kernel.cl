@@ -218,13 +218,18 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
 /*
  * Initialisation kernel
  */
- __kernel void Initialise(__global unsigned int* xorshift_state,
-                          __constant const Camera* camera,
-                          __global unsigned int* pixel_x, __global unsigned int* pixel_y,
-                          __global float* sample_offset_x, __global float* sample_offset_y,
+ __kernel void Initialise(__constant const Camera* camera,
                           __global float* ray_origin_x, __global float* ray_origin_y, __global float* ray_origin_z,
                           __global float* ray_direction_x, __global float* ray_direction_y, __global float* ray_direction_z, 
                           __global unsigned int* ray_depth,
+                          __global unsigned int* primitive_index,
+                          __global float* Li_r, __global float* Li_g, __global float* Li_b,
+                          __global float* beta_r, __global float* beta_g, __global float* beta_b,
+                          __global unsigned int* pixel_x, __global unsigned int* pixel_y,
+                          __global float* sample_offset_x, __global float* sample_offset_y,
+                          __global float* pixel_r, __global float* pixel_g, __global float* pixel_b,
+                          __global float* filter_weight,
+                          __global unsigned int* xorshift_state,
                           unsigned int tile_start_x, unsigned int tile_start_y,
                           unsigned int tile_width, unsigned int tile_height,
                           unsigned int samples_per_pixel)
@@ -234,6 +239,15 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
     {
         // First this is to initialise the random number generator state
         xorshift_state[tid] = XORSHIFT_STATE_START + tid;
+
+        // Reset samples' accumulated radiance
+        Li_r[tid] = 0.f;
+        Li_g[tid] = 0.f;
+        Li_b[tid] = 0.f;
+
+        beta_r[tid] = 1.f;
+        beta_g[tid] = 1.f;
+        beta_b[tid] = 1.f;
 
         // Compute the coordinates of the pixel
         const unsigned int linear_pixel_index = tid / samples_per_pixel;
@@ -268,15 +282,19 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
 
         // Reset depth
         ray_depth[tid] = 0;
+
+        // Reset primitive index
+        primitive_index[tid] = INVALID_PRIM_INDEX;
+
+        // If the thread id is the first sample in the pixel, reset the raster values
+        if (tid % samples_per_pixel == 0)
+        {
+            pixel_r[tid] = 0.f;
+            pixel_g[tid] = 0.f;
+            pixel_b[tid] = 0.f;
+            filter_weight[tid] = 0.f;
+        }
     }
-}
-
-/*
- * Samples setup kernel
- */
-__kernel void SetupSamples()
-{
-
 }
 
 /*
@@ -292,5 +310,5 @@ __kernel void SetupSamples()
   */
   __kernel void DepositSamples()
   {
-      
+
   }

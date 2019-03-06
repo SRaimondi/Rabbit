@@ -16,8 +16,7 @@ namespace CL
 
 RenderingKernels::RenderingKernels(cl_context context, cl_device_id device,
                                    const std::string& kernel_filename)
-    : initialisation_kernel{nullptr}, setup_samples_kernel{nullptr},
-      intersect_kernel{nullptr}, deposit_samples_kernel{nullptr}
+    : initialisation_kernel{nullptr}, intersect_kernel{nullptr}, deposit_samples_kernel{nullptr}
 {
     try
     {
@@ -27,8 +26,6 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device,
         // Get kernels from program
         cl_int err_code{ CL_SUCCESS };
         initialisation_kernel = clCreateKernel(kernel_program, "Initialise", &err_code);
-        CL_CHECK_STATUS(err_code);
-        setup_samples_kernel = clCreateKernel(kernel_program, "SetupSamples", &err_code);
         CL_CHECK_STATUS(err_code);
         intersect_kernel = clCreateKernel(kernel_program, "Intersect", &err_code);
         CL_CHECK_STATUS(err_code);
@@ -90,11 +87,7 @@ void RenderingKernels::Cleanup() noexcept
         {
             CL_CHECK_CALL(clReleaseKernel(initialisation_kernel));
         }
-        if (setup_samples_kernel != nullptr)
-        {
-            CL_CHECK_CALL(clReleaseKernel(setup_samples_kernel));
-        }
-        if (setup_samples_kernel != nullptr)
+        if (intersect_kernel != nullptr)
         {
             CL_CHECK_CALL(clReleaseKernel(intersect_kernel));
         }

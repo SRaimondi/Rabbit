@@ -29,9 +29,6 @@ public:
     // Data initialisation
     cl_kernel initialisation_kernel;
 
-    // Setup samples
-    cl_kernel setup_samples_kernel;
-
     // Intersect samples ray with spheres
     cl_kernel intersect_kernel;
 
