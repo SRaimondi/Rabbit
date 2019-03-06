@@ -56,28 +56,6 @@ struct TileRenderingData
     TileRenderingData(cl_context context, const TileDescription& tile_description);
 };
 
-//// Tile rendering kernels
-//struct TileRenderingKernels
-//{
-//    // Data initialisation kernel
-//    cl_kernel initialisation;
-//    // Restart sample kernel
-//    cl_kernel restart_sample;
-//    // Intersect sample's ray with scene
-//    cl_kernel intersect_scene;
-//    // Update sample radiance kernel
-//    cl_kernel update_radiance;
-//    // Deposit ray computed radiance to pixels
-//    cl_kernel deposit_sample;
-//
-//    TileRenderingKernels(const cl::Context& context,
-//                         const std::pair<const std::string, const std::string>& initialisation_desc,
-//                         const std::pair<const std::string, const std::string>& restart_desc,
-//                         const std::pair<const std::string, const std::string>& intersect_desc,
-//                         const std::pair<const std::string, const std::string>& update_desc,
-//                         const std::pair<const std::string, const std::string>& deposit_desc);
-//};
-
 class TileRendering
 {
 public:

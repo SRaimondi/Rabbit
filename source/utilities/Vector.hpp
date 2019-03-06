@@ -49,7 +49,7 @@ constexpr const Vector3 operator*(const Vector3& lhs, float rhs) noexcept
 
 constexpr const Vector3 operator/(const Vector3& lhs, float rhs) noexcept
 {
-    const float inv_rhs = 1.f / rhs;
+    const float inv_rhs{ 1.f / rhs };
     return inv_rhs * lhs;
 }
 
@@ -82,7 +82,7 @@ inline const Vector3 Normalize(const Vector3& v) noexcept
 
 inline void NormalizeInPlace(Vector3& v) noexcept
 {
-    const float inv_norm = 1.f / Norm(v);
+    const float inv_norm{ 1.f / Norm(v) };
     v.x *= inv_norm;
     v.y *= inv_norm;
     v.z *= inv_norm;

@@ -16,12 +16,12 @@ SceneDescription SceneParser::ReadSceneDescription(const std::string& filename)
     SceneDescription scene_description;
 
     // Open file for reading
-    std::ifstream scene_file(filename);
+    std::ifstream scene_file{ filename };
     if (!scene_file.is_open())
     {
         std::ostringstream error_message;
         error_message << "Could not open file: " << filename;
-        throw std::invalid_argument(error_message.str());
+        throw std::invalid_argument{ error_message.str() };
     }
 
     // TODO There is no check on the scene format for the moment
@@ -36,7 +36,7 @@ SceneDescription SceneParser::ReadSceneDescription(const std::string& filename)
     scene_file >> num_spheres;
 
     // Load and add each sphere to the scene
-    for (int s = 0; s!= num_spheres; s++)
+    for (int s = 0; s != num_spheres; s++)
     {
         float cx, cy, cz, r;
         scene_file >> cx >> cy >> cz >> r;

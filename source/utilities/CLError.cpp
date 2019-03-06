@@ -111,7 +111,7 @@ void CheckCLErrorCode(cl_int err_code, int line, const char* file)
         err << file << ": " << line << "\n";
         err << "OpenCL error: " << ErrorCodeToString(err_code);
 
-        throw std::runtime_error(err.str());
+        throw std::runtime_error{ err.str() };
     }
 }
 
