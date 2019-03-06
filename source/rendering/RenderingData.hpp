@@ -5,7 +5,11 @@
 #ifndef RABBIT_RENDERINGDATA_HPP
 #define RABBIT_RENDERINGDATA_HPP
 
-#include "OpenCLInclude.hpp"
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
+#include <CL/cl.h>
+#endif
 
 namespace Rendering
 {
@@ -13,105 +17,137 @@ namespace CL
 {
 
 // Storage class for the Rays data
-struct Rays
+class Rays
 {
-    Rays(const cl::Context& context, unsigned int num_rays);
+public:
+    Rays(cl_context context, unsigned int num_rays);
+
+    ~Rays() noexcept;
 
     const unsigned int num_rays;
 
     // Origin
-    cl::Buffer origin_x;
-    cl::Buffer origin_y;
-    cl::Buffer origin_z;
+    cl_mem origin_x;
+    cl_mem origin_y;
+    cl_mem origin_z;
 
     // Direction
-    cl::Buffer direction_x;
-    cl::Buffer direction_y;
-    cl::Buffer direction_z;
-
-    // Ray extent
-    cl::Buffer extent;
+    cl_mem direction_x;
+    cl_mem direction_y;
+    cl_mem direction_z;
 
     // Current depth of the ray (cl_uint)
-    cl::Buffer depth;
+    cl_mem depth;
+
+private:
+    // Cleanup all buffers without throwing
+    void Cleanup() noexcept;
 };
 
 // Storage class for the intersection information
-struct Intersections
+class Intersections
 {
-    Intersections(const cl::Context& context, unsigned int num_intersections);
+public:
+    Intersections(cl_context context, unsigned int num_intersections);
+
+    ~Intersections() noexcept;
 
     const unsigned int num_intersections;
 
     // Hit point
-    cl::Buffer hit_point_x;
-    cl::Buffer hit_point_y;
-    cl::Buffer hit_point_z;
+    cl_mem hit_point_x;
+    cl_mem hit_point_y;
+    cl_mem hit_point_z;
 
     // Normal
-    cl::Buffer normal_x;
-    cl::Buffer normal_y;
-    cl::Buffer normal_z;
+    cl_mem normal_x;
+    cl_mem normal_y;
+    cl_mem normal_z;
 
     // UV coordinates
-    cl::Buffer uv_s;
-    cl::Buffer uv_t;
+    cl_mem uv_s;
+    cl_mem uv_t;
 
     // Index of the intersected primitive (cl_uint)
-    cl::Buffer primitive_index;
+    cl_mem primitive_index;
+
+private:
+    // Cleanup all buffers without throwing
+    void Cleanup() noexcept;
 };
 
 // Samples taken in the image plane
-struct Samples
+class Samples
 {
-    Samples(const cl::Context& context, unsigned int num_samples);
+public:
+    Samples(cl_context context, unsigned int num_samples);
+
+    ~Samples() noexcept;
 
     const unsigned int num_samples;
 
     // Incoming radiance
-    cl::Buffer Li_r;
-    cl::Buffer Li_g;
-    cl::Buffer Li_b;
+    cl_mem Li_r;
+    cl_mem Li_g;
+    cl_mem Li_b;
 
     // Accumulation mask for current path
-    cl::Buffer beta_r;
-    cl::Buffer beta_g;
-    cl::Buffer beta_b;
+    cl_mem beta_r;
+    cl_mem beta_g;
+    cl_mem beta_b;
 
     // Sample pixel coordinates
-    cl::Buffer pixel_x;
-    cl::Buffer pixel_y;
+    cl_mem pixel_x;
+    cl_mem pixel_y;
 
     // Sample offset in the pixel
-    cl::Buffer sample_offset_x;
-    cl::Buffer sample_offset_y;
+    cl_mem sample_offset_x;
+    cl_mem sample_offset_y;
+
+private:
+    // Cleanup all buffers without throwing
+    void Cleanup() noexcept;
 };
 
 // Film pixels
-struct Pixels
+class Pixels
 {
-    Pixels(const cl::Context& context, unsigned int num_pixels);
+public:
+    Pixels(cl_context context, unsigned int num_pixels);
+
+    ~Pixels() noexcept;
 
     const unsigned int num_pixels;
 
     // Accumulated pixel value
-    cl::Buffer pixel_r;
-    cl::Buffer pixel_g;
-    cl::Buffer pixel_b;
+    cl_mem pixel_r;
+    cl_mem pixel_g;
+    cl_mem pixel_b;
 
     // Total filter value
-    cl::Buffer filter_weight;
+    cl_mem filter_weight;
+
+private:
+    // Cleanup all buffers without throwing
+    void Cleanup() noexcept;
 };
 
 // XOrShift status, it's a very simple generator but good enough for testing and also has 32bit status
-struct XOrShift
+class XOrShift
 {
-    XOrShift(const cl::Context& context, unsigned int num_generators);
+public:
+    XOrShift(cl_context context, unsigned int num_generators);
+
+    ~XOrShift() noexcept;
 
     const unsigned int num_generators;
 
     // Status of the generator
-    cl::Buffer state;
+    cl_mem state;
+
+private:
+    // Cleanup all buffers without throwing
+    void Cleanup() noexcept;
 };
 
 } // CL namespace

@@ -16,8 +16,6 @@ find_package(OpenCL REQUIRED)
 
 
 add_executable(Rabbit
-        source/Main.cpp
-        external/cl2.hpp
         external/stb_image_writer.hpp
         source/utilities/FileIO.cpp
         source/utilities/FileIO.hpp
@@ -31,11 +29,11 @@ add_executable(Rabbit
         source/utilities/Common.hpp
         source/rendering/Camera.cpp
         source/rendering/Camera.hpp
-        source/utilities/OpenCLInclude.hpp
         source/scene/SceneParser.cpp
         source/scene/SceneParser.hpp
         source/rendering/TileRendering.cpp
-        source/rendering/TileRendering.hpp)
+        source/rendering/TileRendering.hpp
+        source/Main.cpp)
 
 if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)
