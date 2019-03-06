@@ -26,7 +26,7 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device,
 
         // Get kernels from program
         cl_int err_code{ CL_SUCCESS };
-        initialisation_kernel = clCreateKernel(kernel_program, "Initialisation", &err_code);
+        initialisation_kernel = clCreateKernel(kernel_program, "Initialise", &err_code);
         CL_CHECK_STATUS(err_code);
         setup_samples_kernel = clCreateKernel(kernel_program, "SetupSamples", &err_code);
         CL_CHECK_STATUS(err_code);

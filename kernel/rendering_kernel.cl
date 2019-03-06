@@ -215,3 +215,32 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
     return temp.f;
 }
 
+/*
+ * Initialisation kernel
+ */
+ __kernel void Initialise(__global unsigned int* xorshift_state,
+                          __constant const Camera* camera,
+                          __global unsigned int* pixel_x, __global unsigned int* pixel_y,
+                          __global float* sample_offset_x, __global float* sample_offset_y,
+                          unsigned int tile_start_x, unsigned int tile_start_y,
+                          unsigned int tile_width, unsigned int tile_height,
+                          unsigned int samples_per_pixel)
+{
+    const unsigned int tid = get_global_id(0);
+    if (tid < tile_width * tile_height * samples_per_pixel)
+    {
+        // First this is to initialise the random number generator state
+        xorshift_state[tid] = XORSHIFT_STATE_START + tid;
+
+        // Next, we compute the coordinate of the pixel
+        const unsigned int linear_pixel_index = tid / samples_per_pixel;
+        const unsigned int py = linear_pixel_index / tile_width;
+        pixel_x[tid] = tile_start_x + linear_pixel_index - py * tile_width;
+        pixel_y[tid] = tile_start_y + py;
+
+        // Finally, generate a random offset in the pixel for each sample
+        // This is pure random now, next would be to stratify the samples
+        sample_offset_x[tid] = GenerateFloat(xorshift_state + tid);
+        sample_offset_y[tid] = GenerateFloat(xorshift_state + tid);
+    }
+}
