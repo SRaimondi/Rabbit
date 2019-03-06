@@ -22,6 +22,10 @@ struct TileDescription
     // Samples per pixel
     const unsigned int pixel_samples;
 
+    TileDescription(unsigned int tw, unsigned int th, unsigned int ps) noexcept
+        : tile_width(tw), tile_height(th), pixel_samples(ps)
+    {}
+
     // Compute the total number of pixels in the tile
     unsigned int TotalPixels() const noexcept
     {
@@ -49,30 +53,30 @@ struct TileRenderingData
     // XOrShift state for random number generation
     XOrShift d_xorshift_state;
 
-    TileRenderingData(const cl::Context& context, const TileDescription& tile_description);
+    TileRenderingData(cl_context context, const TileDescription& tile_description);
 };
 
-// Tile rendering kernels
-struct TileRenderingKernels
-{
-    // Data initialisation kernel
-    cl::Kernel initialisation;
-    // Restart sample kernel
-    cl::Kernel restart_sample;
-    // Intersect sample's ray with scene
-    cl::Kernel intersect_scene;
-    // Update sample radiance kernel
-    cl::Kernel update_radiance;
-    // Deposit ray computed radiance to pixels
-    cl::Kernel deposit_sample;
-
-    TileRenderingKernels(const cl::Context& context,
-                         const std::pair<const std::string, const std::string>& initialisation_desc,
-                         const std::pair<const std::string, const std::string>& restart_desc,
-                         const std::pair<const std::string, const std::string>& intersect_desc,
-                         const std::pair<const std::string, const std::string>& update_desc,
-                         const std::pair<const std::string, const std::string>& deposit_desc);
-};
+//// Tile rendering kernels
+//struct TileRenderingKernels
+//{
+//    // Data initialisation kernel
+//    cl_kernel initialisation;
+//    // Restart sample kernel
+//    cl_kernel restart_sample;
+//    // Intersect sample's ray with scene
+//    cl_kernel intersect_scene;
+//    // Update sample radiance kernel
+//    cl_kernel update_radiance;
+//    // Deposit ray computed radiance to pixels
+//    cl_kernel deposit_sample;
+//
+//    TileRenderingKernels(const cl::Context& context,
+//                         const std::pair<const std::string, const std::string>& initialisation_desc,
+//                         const std::pair<const std::string, const std::string>& restart_desc,
+//                         const std::pair<const std::string, const std::string>& intersect_desc,
+//                         const std::pair<const std::string, const std::string>& update_desc,
+//                         const std::pair<const std::string, const std::string>& deposit_desc);
+//};
 
 class TileRendering
 {
