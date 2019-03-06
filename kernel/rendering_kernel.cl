@@ -306,6 +306,14 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
  }
 
  /*
+  * Update sample radiance
+  */
+  __kernel void UpdateRadiance()
+  {
+      
+  }
+
+ /*
   * Deposit samples on raster kernel
   */
   __kernel void DepositSamples()

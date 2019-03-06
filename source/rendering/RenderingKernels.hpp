@@ -32,6 +32,9 @@ public:
     // Intersect samples ray with spheres
     cl_kernel intersect_kernel;
 
+    // Update radiance kernel
+    cl_kernel update_radiance_kernel;
+
     // Deposit the sample comping radiance to the pixel it belongs to
     cl_kernel deposit_samples_kernel;
 
