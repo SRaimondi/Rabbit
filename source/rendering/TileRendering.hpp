@@ -86,6 +86,8 @@ public:
                   const SceneDescription& scene_description,
                   const Camera& camera);
 
+    ~TileRendering() noexcept;
+
     // Access TileDescription from the context
     const TileDescription& GetTileDescription() const noexcept
     {
@@ -107,10 +109,13 @@ private:
     cl_mem d_spheres;
 
     // Buffer with the camera used to render the scene
-    // cl::Buffer d_camera;
+    cl_mem d_camera;
 
     // Tile rendering kernels
     // TileRenderingKernels kernels;
+
+    // Cleanup OpenCL resource without throwing
+    void Cleanup() noexcept;
 };
 
 } // CL namespace

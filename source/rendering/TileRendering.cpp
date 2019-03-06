@@ -6,6 +6,8 @@
 #include "FileIO.hpp"
 #include "CLError.hpp"
 
+#include <iostream>
+
 namespace Rendering
 {
 namespace CL
@@ -60,25 +62,60 @@ TileRendering::TileRendering(cl_context context, cl_device_id device,
       rendering_data{ context, tile_description },
       num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) },
       d_spheres{ nullptr }
-//      d_camera{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(Camera), const_cast<Camera*>(&camera) },
-//    // TODO This should come from some config file
-//      kernels{ context,
-//               std::make_pair("./kernel/initialisation.cl", "Initialise"),
-//               std::make_pair("./kernel/restart.cl", "RestartSample"),
-//               std::make_pair("./kernel/intersect.cl", "Intersect"),
-//               std::make_pair("./kernel/update_radiance.cl", "UpdateRadiance"),
-//               std::make_pair("./kernel/deposit_sample.cl", "DepositSamples") }
 {
     cl_int err_code = CL_SUCCESS;
 
-    // Create command queue
-    command_queue = clCreateCommandQueue(context, device, queue_properties, &err_code);
-    CL_CHECK_STATUS(err_code);
+    try
+    {
+        // Create command queue
+        command_queue = clCreateCommandQueue(context, device, queue_properties, &err_code);
+        CL_CHECK_STATUS(err_code);
 
-    // Create spheres buffer
-    d_spheres = clCreateBuffer(context, CL_MEM_READ_ONLY, num_spheres * sizeof(Sphere),
-                               const_cast<Sphere*>(scene_description.loaded_spheres.data()), &err_code);
-    CL_CHECK_STATUS(err_code);
+        // Create spheres buffer
+        d_spheres = clCreateBuffer(context, CL_MEM_READ_ONLY, num_spheres * sizeof(Sphere), nullptr, &err_code);
+        CL_CHECK_STATUS(err_code);
+        // Copy data to device
+        CL_CHECK_CALL(clEnqueueWriteBuffer(command_queue, d_spheres, CL_TRUE, 0, num_spheres * sizeof(Sphere),
+                                           scene_description.loaded_spheres.data(), 0, nullptr, nullptr));
+
+        // Create camera buffer
+        d_camera = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(Camera), nullptr, &err_code);
+        CL_CHECK_STATUS(err_code);
+        // Copy data to device
+        CL_CHECK_CALL(clEnqueueWriteBuffer(command_queue, d_camera, CL_TRUE, 0, sizeof(Camera),
+                                           &camera, 0, nullptr, nullptr));
+    }
+    catch (const std::exception& ex)
+    {
+        // Cleanup what is needed and rethrow exception
+        Cleanup();
+        throw;
+    }
+}
+
+TileRendering::~TileRendering() noexcept
+{
+    Cleanup();
+}
+
+void TileRendering::Cleanup() noexcept
+{
+    try
+    {
+        if (command_queue != nullptr)
+        {
+            CL_CHECK_CALL(clReleaseCommandQueue(command_queue));
+        }
+        if (d_spheres != nullptr)
+        {
+            CL_CHECK_CALL(clReleaseMemObject(d_spheres));
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        // TODO operator<< could throw
+        std::cerr << ex.what() << std::endl;
+    }
 }
 
 } // CL namespace
