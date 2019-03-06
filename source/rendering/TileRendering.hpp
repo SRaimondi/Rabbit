@@ -95,6 +95,9 @@ public:
     }
 
 private:
+    // Cleanup OpenCL resource without throwing
+    void Cleanup() noexcept;
+
     // Command queue where the commands are issued for the tile rendering
     cl_command_queue command_queue;
 
@@ -113,9 +116,6 @@ private:
 
     // Tile rendering kernels
     // TileRenderingKernels kernels;
-
-    // Cleanup OpenCL resource without throwing
-    void Cleanup() noexcept;
 };
 
 } // CL namespace

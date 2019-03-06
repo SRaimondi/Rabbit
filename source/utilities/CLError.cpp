@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 namespace CL
 {
@@ -112,6 +113,11 @@ void CheckCLErrorCode(cl_int err_code, int line, const char* file)
 
         throw std::runtime_error(err.str());
     }
+}
+
+void ContextCallback(const char* errinfo, const void*, size_t, void*)
+{
+    std::cerr << "OpenCL context callback: " << errinfo << std::endl;
 }
 
 } // CL namespace

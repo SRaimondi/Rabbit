@@ -25,8 +25,8 @@ Rays::Rays(cl_context context, unsigned int num_rays)
       direction_x{ nullptr }, direction_y{ nullptr }, direction_z{ nullptr },
       depth{ nullptr }
 {
-    cl_int err_code = CL_SUCCESS;
-    const size_t buffer_size = num_rays * sizeof(float);
+    cl_int err_code{ CL_SUCCESS };
+    const size_t buffer_size{ num_rays * sizeof(float) };
 
     try
     {
@@ -86,8 +86,8 @@ Intersections::Intersections(cl_context context, unsigned int num_intersections)
       uv_s{ nullptr }, uv_t{ nullptr },
       primitive_index{ nullptr }
 {
-    cl_int err_code = CL_SUCCESS;
-    const size_t buffer_size = num_intersections * sizeof(float);
+    cl_int err_code{ CL_SUCCESS };
+    const size_t buffer_size{ num_intersections * sizeof(float) };
 
     try
     {
@@ -155,8 +155,8 @@ Samples::Samples(cl_context context, unsigned int num_samples)
       pixel_x{ nullptr }, pixel_y{ nullptr },
       sample_offset_x{ nullptr }, sample_offset_y{ nullptr }
 {
-    cl_int err_code = CL_SUCCESS;
-    const size_t buffer_size = num_samples * sizeof(float);
+    cl_int err_code{ CL_SUCCESS };
+    const size_t buffer_size{ num_samples * sizeof(float) };
 
     try
     {
@@ -224,8 +224,8 @@ Pixels::Pixels(cl_context context, unsigned int num_pixels)
       pixel_r{ nullptr }, pixel_g{ nullptr }, pixel_b{ nullptr },
       filter_weight{ nullptr }
 {
-    cl_int err_code = CL_SUCCESS;
-    const size_t buffer_size = num_pixels * sizeof(float);
+    cl_int err_code{ CL_SUCCESS };
+    const size_t buffer_size{ num_pixels * sizeof(float) };
 
     try
     {
@@ -272,7 +272,7 @@ XOrShift::XOrShift(cl_context context, unsigned int num_generators)
     : num_generators{ num_generators },
       state{ nullptr }
 {
-    cl_int err_code = CL_SUCCESS;
+    cl_int err_code{ CL_SUCCESS };
 
     try
     {

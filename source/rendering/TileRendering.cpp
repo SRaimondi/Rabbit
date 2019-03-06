@@ -21,38 +21,6 @@ TileRenderingData::TileRenderingData(cl_context context, const TileDescription& 
       d_xorshift_state{ context, tile_description.TotalSamples() }
 {}
 
-//TileRenderingKernels::TileRenderingKernels(const cl::Context& context,
-//                                           const std::pair<const std::string, const std::string>& initialisation_desc,
-//                                           const std::pair<const std::string, const std::string>& restart_desc,
-//                                           const std::pair<const std::string, const std::string>& intersect_desc,
-//                                           const std::pair<const std::string, const std::string>& update_desc,
-//                                           const std::pair<const std::string, const std::string>& deposit_desc)
-//{
-//    const std::string build_options{
-//        "-cl-std=CL1.2 -cl-mad-enable -cl-finite-math-only  -cl-denorms-are-zero -I./kernel" };
-//
-//    // For each string pair, crete the program and initialise the kernel from it
-//    const cl::Program init_program{ context, IO::ReadFile(initialisation_desc.first) };
-//    init_program.build(build_options.c_str());
-//    initialisation = cl::Kernel{ init_program, initialisation_desc.second.c_str() };
-//
-//    const cl::Program restart_program{ context, IO::ReadFile(restart_desc.first) };
-//    restart_program.build(build_options.c_str());
-//    restart_sample = cl::Kernel{ restart_program, restart_desc.second.c_str() };
-//
-//    const cl::Program intersect_program{ context, IO::ReadFile(intersect_desc.first) };
-//    intersect_program.build(build_options.c_str());
-//    intersect_scene = cl::Kernel{ intersect_program, intersect_desc.second.c_str() };
-//
-//    const cl::Program update_program{ context, IO::ReadFile(update_desc.first) };
-//    update_program.build(build_options.c_str());
-//    update_radiance = cl::Kernel{ update_program, update_desc.second.c_str() };
-//
-//    const cl::Program deposit_program{ context, IO::ReadFile(deposit_desc.first) };
-//    deposit_program.build(build_options.c_str());
-//    deposit_sample = cl::Kernel{ deposit_program, deposit_desc.second.c_str() };
-//}
-
 TileRendering::TileRendering(cl_context context, cl_device_id device,
                              cl_command_queue_properties queue_properties,
                              const SceneDescription& scene_description,
@@ -60,10 +28,10 @@ TileRendering::TileRendering(cl_context context, cl_device_id device,
     : command_queue{ nullptr },
       tile_description{ scene_description.tile_width, scene_description.tile_height, scene_description.pixel_samples },
       rendering_data{ context, tile_description },
-      num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) },
-      d_spheres{ nullptr }
+      num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) }, d_spheres{ nullptr },
+      d_camera{ nullptr }
 {
-    cl_int err_code = CL_SUCCESS;
+    cl_int err_code{ CL_SUCCESS };
 
     try
     {
@@ -109,6 +77,10 @@ void TileRendering::Cleanup() noexcept
         if (d_spheres != nullptr)
         {
             CL_CHECK_CALL(clReleaseMemObject(d_spheres));
+        }
+        if (d_camera != nullptr)
+        {
+            CL_CHECK_CALL(clReleaseMemObject(d_camera));
         }
     }
     catch (const std::exception& ex)

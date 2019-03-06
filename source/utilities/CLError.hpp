@@ -35,6 +35,9 @@ void CheckCLErrorCode(cl_int err_code, int line, const char* file);
 #define CL_CHECK_STATUS(status)
 #endif
 
+// Context callback function
+void CL_CALLBACK ContextCallback(const char* errinfo, const void* private_info, size_t cb, void* user_data);
+
 } // CL namespace
 
 #endif //RABBIT_CLERROR_HPP
