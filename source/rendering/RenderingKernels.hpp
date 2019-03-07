@@ -45,10 +45,10 @@ private:
     void SetupKernels(cl_program kernel_program);
 
     // Set kernel arguments
-    void SetKernelArguments(const RenderingData& rendering_data,
-                            const SceneDescription& scene_description, const ::CL::Scene& scene);
+    void SetKernelArgs(const RenderingData& rendering_data,
+                       const SceneDescription& scene_description, const ::CL::Scene& scene);
 
-    // Set argument for intialisation kernel
+    // Set argument for Initialise kernel
     void SetInitialiseKernelArgs(const RenderingData& rendering_data,
                                  const SceneDescription& scene_description, const ::CL::Scene& scene);
 

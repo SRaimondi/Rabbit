@@ -243,18 +243,6 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
     const unsigned int tid = get_global_id(0);
     if (tid < tile_width * tile_height * samples_per_pixel)
     {
-        // Initialise the random number generator state
-        xorshift_state[tid] = XORSHIFT_STATE_START + tid;
-
-        // Reset samples' accumulated radiance
-        Li_r[tid] = 0.f;
-        Li_g[tid] = 0.f;
-        Li_b[tid] = 0.f;
-
-        beta_r[tid] = 1.f;
-        beta_g[tid] = 1.f;
-        beta_b[tid] = 1.f;
-
         // Compute the coordinates of the pixel
         const unsigned int linear_pixel_index = tid / samples_per_pixel;
         const unsigned int tile_py = linear_pixel_index / tile_width;
@@ -262,43 +250,60 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
         const unsigned int px = tile_start_x + tile_px;
         const unsigned int py = tile_start_y + tile_py;
 
-        // Store
-        pixel_x[tid] = px;
-        pixel_y[tid] = py;
+        // Check we are inside the image
 
-        // Generate a random offset in the pixel for each sample
-        // This is pure random now, next would be to stratify the samples
-        const float sx = GenerateFloat(xorshift_state + tid);
-        const float sy = GenerateFloat(xorshift_state + tid);
-
-        // Store
-        sample_offset_x[tid] = sx;
-        sample_offset_y[tid] = sy;
-
-        // Setup the rays for each sample
-        ray_origin_x[tid] = camera->eye_x;
-        ray_origin_y[tid] = camera->eye_y;
-        ray_origin_z[tid] = camera->eye_z;
-
-        // Generate direction and store
-        const float3 ray_direction = GenerateRayDirection(camera, px, py, sx, sy);
-        ray_direction_x[tid] = ray_direction.x;
-        ray_direction_y[tid] = ray_direction.y;
-        ray_direction_z[tid] = ray_direction.z;
-
-        // Reset depth
-        ray_depth[tid] = 0;
-
-        // Reset primitive index
-        primitive_index[tid] = INVALID_PRIM_INDEX;
-
-        // If the thread id is the first sample in the pixel, reset the raster values
-        if (tid % samples_per_pixel == 0)
+        if (px < camera->image_width && py < camera->image_height)
         {
-            pixel_r[tid] = 0.f;
-            pixel_g[tid] = 0.f;
-            pixel_b[tid] = 0.f;
-            filter_weight[tid] = 0.f;
+            // Initialise the random number generator state
+            xorshift_state[tid] = XORSHIFT_STATE_START + tid;
+
+            // Reset samples' accumulated radiance
+            Li_r[tid] = 0.f;
+            Li_g[tid] = 0.f;
+            Li_b[tid] = 0.f;
+
+            beta_r[tid] = 1.f;
+            beta_g[tid] = 1.f;
+            beta_b[tid] = 1.f;
+
+            // Store
+            pixel_x[tid] = px;
+            pixel_y[tid] = py;
+
+            // Generate a random offset in the pixel for each sample
+            // This is pure random now, next would be to stratify the samples
+            const float sx = GenerateFloat(xorshift_state + tid);
+            const float sy = GenerateFloat(xorshift_state + tid);
+
+            // Store
+            sample_offset_x[tid] = sx;
+            sample_offset_y[tid] = sy;
+
+            // Setup the rays for each sample
+            ray_origin_x[tid] = camera->eye_x;
+            ray_origin_y[tid] = camera->eye_y;
+            ray_origin_z[tid] = camera->eye_z;
+
+            // Generate direction and store
+            const float3 ray_direction = GenerateRayDirection(camera, px, py, sx, sy);
+            ray_direction_x[tid] = ray_direction.x;
+            ray_direction_y[tid] = ray_direction.y;
+            ray_direction_z[tid] = ray_direction.z;
+
+            // Reset depth
+            ray_depth[tid] = 0;
+
+            // Reset primitive index
+            primitive_index[tid] = INVALID_PRIM_INDEX;
+
+            // If the thread id is the first sample in the pixel, reset the raster values
+            if (tid % samples_per_pixel == 0)
+            {
+                pixel_r[tid] = 0.f;
+                pixel_g[tid] = 0.f;
+                pixel_b[tid] = 0.f;
+                filter_weight[tid] = 0.f;
+            }
         }
     }
 }

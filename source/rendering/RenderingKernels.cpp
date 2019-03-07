@@ -29,7 +29,7 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, cons
         SetupKernels(kernel_program);
 
         // Set arguments from the given rendering data
-        SetKernelArguments(rendering_data, scene_description, scene);
+        SetKernelArgs(rendering_data, scene_description, scene);
     }
     catch (const std::exception& ex)
     {
@@ -90,8 +90,8 @@ void RenderingKernels::SetupKernels(cl_program kernel_program)
     CL_CHECK_STATUS(err_code);
 }
 
-void RenderingKernels::SetKernelArguments(const RenderingData& rendering_data,
-                                          const SceneDescription& scene_description, const ::CL::Scene& scene)
+void RenderingKernels::SetKernelArgs(const RenderingData& rendering_data,
+                                     const SceneDescription& scene_description, const ::CL::Scene& scene)
 {
     // Setup Initialise kernel
     SetInitialiseKernelArgs(rendering_data, scene_description, scene);
