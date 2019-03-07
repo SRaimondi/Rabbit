@@ -97,7 +97,7 @@ void RenderingKernels::SetKernelArgs(const RenderingData& rendering_data,
     SetInitialiseKernelArgs(rendering_data, scene_description, scene);
 
     // Setup Intersect kernel
-
+    SetIntersectKernelArgs(rendering_data, scene_description, scene);
 }
 
 void RenderingKernels::SetInitialiseKernelArgs(const RenderingData& rendering_data,
@@ -132,6 +132,34 @@ void RenderingKernels::SetInitialiseKernelArgs(const RenderingData& rendering_da
     CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 26, sizeof(unsigned int), &scene_description.tile_width));
     CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 27, sizeof(unsigned int), &scene_description.tile_height));
     CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 28, sizeof(unsigned int), &scene_description.pixel_samples));
+}
+
+void RenderingKernels::SetIntersectKernelArgs(const RenderingData& rendering_data,
+                                              const SceneDescription& scene_description, const ::CL::Scene& scene)
+{
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 0, sizeof(cl_mem), &scene.d_spheres));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 1, sizeof(unsigned int), &scene.num_spheres));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 2, sizeof(cl_mem), &rendering_data.d_rays.origin_x));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 3, sizeof(cl_mem), &rendering_data.d_rays.origin_y));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 4, sizeof(cl_mem), &rendering_data.d_rays.origin_z));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 5, sizeof(cl_mem), &rendering_data.d_rays.direction_x));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 6, sizeof(cl_mem), &rendering_data.d_rays.direction_y));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 7, sizeof(cl_mem), &rendering_data.d_rays.direction_z));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 8, sizeof(cl_mem), &rendering_data.d_intersections.hit_point_x));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 9, sizeof(cl_mem), &rendering_data.d_intersections.hit_point_y));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 10, sizeof(cl_mem), &rendering_data.d_intersections.hit_point_z));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 11, sizeof(cl_mem), &rendering_data.d_intersections.normal_x));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 12, sizeof(cl_mem), &rendering_data.d_intersections.normal_y));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 13, sizeof(cl_mem), &rendering_data.d_intersections.normal_z));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 14, sizeof(cl_mem), &rendering_data.d_intersections.uv_s));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 15, sizeof(cl_mem), &rendering_data.d_intersections.uv_t));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 16, sizeof(cl_mem), &rendering_data.d_intersections.primitive_index));
+    // We don't set argument 17 and 18, they are set when we render the specific tile
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 19, sizeof(unsigned int), &scene_description.tile_width));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 20, sizeof(unsigned int), &scene_description.tile_height));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 21, sizeof(unsigned int), &scene_description.pixel_samples));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 22, sizeof(unsigned int), &scene_description.image_width));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 23, sizeof(unsigned int), &scene_description.image_height));
 }
 
 void RenderingKernels::Cleanup() noexcept

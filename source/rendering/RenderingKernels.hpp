@@ -48,9 +48,13 @@ private:
     void SetKernelArgs(const RenderingData& rendering_data,
                        const SceneDescription& scene_description, const ::CL::Scene& scene);
 
-    // Set argument for Initialise kernel
+    // Set arguments for Initialise kernel
     void SetInitialiseKernelArgs(const RenderingData& rendering_data,
                                  const SceneDescription& scene_description, const ::CL::Scene& scene);
+
+    // Set arguments for Intersect kernel
+    void SetIntersectKernelArgs(const RenderingData& rendering_data,
+                                const SceneDescription& scene_description, const ::CL::Scene& scene);
 
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;

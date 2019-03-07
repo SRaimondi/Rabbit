@@ -311,10 +311,77 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
 /*
  * Intersect kernel
  */
- __kernel void Intersect()
- {
+__kernel void Intersect(// Spheres in the scene
+                        __global const Sphere* spheres, unsigned int num_spheres,
+                        // Ray origin and direction
+                        __global const float* ray_origin_x,
+                        __global const float* ray_origin_y, 
+                        __global const float* ray_origin_z,
+                        __global const float* ray_direction_x,
+                        __global const float* ray_direction_y, 
+                        __global const float* ray_direction_z,
+                        // Intersection information
+                        __global float* hit_point_x, __global float* hit_point_y, __global float* hit_point_z,
+                        __global float* normal_x, __global float* normal_y, __global float* normal_z,
+                        __global float* uv_s, __global float* uv_t, __global unsigned int* primitive_index,
+                        // Description of the tile
+                        unsigned int tile_start_x, unsigned int tile_start_y,
+                        unsigned int tile_width, unsigned int tile_height,
+                        unsigned int samples_per_pixel,
+                        // Size of the image
+                        unsigned int image_width, unsigned int image_height)
+{
+    const unsigned int tid = get_global_id(0);
+    if (tid < tile_width * tile_height * samples_per_pixel)
+    {
+        // Compute the coordinates of the pixel
+        const unsigned int linear_pixel_index = tid / samples_per_pixel;
+        const unsigned int tile_py = linear_pixel_index / tile_width;
+        const unsigned int tile_px = linear_pixel_index - tile_py * tile_width;
+        const unsigned int px = tile_start_x + tile_px;
+        const unsigned int py = tile_start_y + tile_py;
 
- }
+        // Check we are inside the image
+        if (px < image_width && py < image_height)
+        {
+            // Load ray data
+            const float ox = ray_origin_x[tid];
+            const float oy = ray_origin_y[tid];
+            const float oz = ray_origin_z[tid];
+            const float dx = ray_direction_x[tid];
+            const float dy = ray_direction_y[tid];
+            const float dz = ray_direction_z[tid];
+            float extent = MAXFLOAT;
+
+            // Intersect ray with spheres
+            unsigned int closest_sphere = num_spheres;
+            for (unsigned int s = 0; s != num_spheres; s++)
+            {
+                if (IntersectRaySphere(spheres[s], ox, oy, oz, dx, dy, dz, &extent))
+                {
+                    closest_sphere = s;
+                }
+            }
+
+            if (closest_sphere < num_spheres)
+            {
+                // Compute intersection and store
+                const Intersection intersection = FillIntersection(spheres[closest_sphere], ox, oy, oz, dx, dy, dz, extent);
+                hit_point_x[tid] = intersection.hit_point_x;
+                hit_point_y[tid] = intersection.hit_point_y;
+                hit_point_z[tid] = intersection.hit_point_z;
+                normal_x[tid] = intersection.normal_x;
+                normal_y[tid] = intersection.normal_y;
+                normal_z[tid] = intersection.normal_z;
+                uv_s[tid] = intersection.uv_s;
+                uv_t[tid] = intersection.uv_t;
+
+                // Save index of primitive hit
+                primitive_index[tid] = closest_sphere;
+            }
+        }
+    }
+}
 
  /*
   * Update sample radiance
