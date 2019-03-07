@@ -243,7 +243,7 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
     const unsigned int tid = get_global_id(0);
     if (tid < tile_width * tile_height * samples_per_pixel)
     {
-        // First this is to initialise the random number generator state
+        // Initialise the random number generator state
         xorshift_state[tid] = XORSHIFT_STATE_START + tid;
 
         // Reset samples' accumulated radiance
