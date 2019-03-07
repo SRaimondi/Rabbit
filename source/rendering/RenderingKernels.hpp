@@ -20,12 +20,13 @@ class RenderingKernels
 {
 public:
     RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename,
-                     const RenderingData& rendering_data, const ::CL::Scene& scene);
+                     const RenderingData& rendering_data,
+                     const SceneDescription& scene_description, const ::CL::Scene& scene);
 
     ~RenderingKernels() noexcept;
 
     // Data initialisation
-    cl_kernel initialisation_kernel;
+    cl_kernel initialise_kernel;
 
     // Intersect samples ray with spheres
     cl_kernel intersect_kernel;
@@ -44,7 +45,12 @@ private:
     void SetupKernels(cl_program kernel_program);
 
     // Set kernel arguments
-    void SetKernelArguments(const RenderingData& rendering_data, const ::CL::Scene& scene);
+    void SetKernelArguments(const RenderingData& rendering_data,
+                            const SceneDescription& scene_description, const ::CL::Scene& scene);
+
+    // Set argument for intialisation kernel
+    void SetInitialiseKernelArgs(const RenderingData& rendering_data,
+                                 const SceneDescription& scene_description, const ::CL::Scene& scene);
 
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;
