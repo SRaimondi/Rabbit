@@ -164,7 +164,7 @@ struct RenderingData
     // XOrShift state for random number generation
     XOrShift d_xorshift_state;
 
-    RenderingData(cl_context context, unsigned int num_pixels, unsigned int num_samples);
+    RenderingData(cl_context context, unsigned int num_pixels, unsigned int total_samples);
 };
 
 } // CL namespace

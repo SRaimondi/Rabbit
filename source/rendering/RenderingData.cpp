@@ -305,12 +305,12 @@ void XOrShift::Cleanup() noexcept
     }
 }
 
-RenderingData::RenderingData(cl_context context, unsigned int num_pixels, unsigned int num_samples)
-    : d_rays{ context, num_samples },
-      d_intersections{ context, num_samples },
-      d_samples{ context, num_samples },
+RenderingData::RenderingData(cl_context context, unsigned int num_pixels, unsigned int total_samples)
+    : d_rays{ context, total_samples },
+      d_intersections{ context, total_samples },
+      d_samples{ context, total_samples },
       d_pixels{ context, num_pixels },
-      d_xorshift_state{ context, num_samples }
+      d_xorshift_state{ context, total_samples }
 {}
 
 } // CL namespace

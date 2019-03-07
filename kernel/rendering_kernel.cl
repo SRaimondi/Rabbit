@@ -219,17 +219,23 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
  * Initialisation kernel
  */
  __kernel void Initialise(__constant const Camera* camera,
+                          // Rays description
                           __global float* ray_origin_x, __global float* ray_origin_y, __global float* ray_origin_z,
                           __global float* ray_direction_x, __global float* ray_direction_y, __global float* ray_direction_z, 
                           __global unsigned int* ray_depth,
+                          // Index of the primitive hit
                           __global unsigned int* primitive_index,
+                          // Samples description
                           __global float* Li_r, __global float* Li_g, __global float* Li_b,
                           __global float* beta_r, __global float* beta_g, __global float* beta_b,
                           __global unsigned int* pixel_x, __global unsigned int* pixel_y,
                           __global float* sample_offset_x, __global float* sample_offset_y,
+                          // Pixel where the sample deposit their computed radiance value
                           __global float* pixel_r, __global float* pixel_g, __global float* pixel_b,
                           __global float* filter_weight,
+                          // Random number generator state
                           __global unsigned int* xorshift_state,
+                          // Description of the tile
                           unsigned int tile_start_x, unsigned int tile_start_y,
                           unsigned int tile_width, unsigned int tile_height,
                           unsigned int samples_per_pixel)
