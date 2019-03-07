@@ -6,6 +6,7 @@
 #define RABBIT_RENDERINGKERNELS_HPP
 
 #include "RenderingData.hpp"
+#include "Scene.hpp"
 
 #include <string>
 
@@ -19,7 +20,7 @@ class RenderingKernels
 {
 public:
     RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename,
-                     const RenderingData& rendering_data);
+                     const RenderingData& rendering_data, const ::CL::Scene& scene);
 
     ~RenderingKernels() noexcept;
 
@@ -43,7 +44,7 @@ private:
     void SetupKernels(cl_program kernel_program);
 
     // Set kernel arguments
-    void SetKernelArguments(const RenderingData& rendering_data);
+    void SetKernelArguments(const RenderingData& rendering_data, const ::CL::Scene& scene);
 
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;

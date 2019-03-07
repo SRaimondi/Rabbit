@@ -19,7 +19,7 @@ public:
     // Create a new rendering context with a single device, the scene description and a camera to use
     RenderingContext(cl_context context, cl_device_id device,
                      const SceneDescription& scene_description,
-                     const Camera& camera);
+                     const ::CL::Scene& scene);
 
     ~RenderingContext() noexcept;
 

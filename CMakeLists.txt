@@ -34,7 +34,9 @@ add_executable(Rabbit
         source/rendering/TileRendering.hpp
         source/Main.cpp
         source/rendering/RenderingKernels.cpp
-        source/rendering/RenderingKernels.hpp)
+        source/rendering/RenderingKernels.hpp
+        source/scene/Scene.cpp
+        source/scene/Scene.hpp)
 
 if (APPLE)
     target_compile_definitions(Rabbit PRIVATE CL_SILENCE_DEPRECATION)

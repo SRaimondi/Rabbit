@@ -123,7 +123,8 @@ int main(int argc, const char** argv)
 
 
         // TODO All up to here should go in a separate class that handles the OpenCL environment
-        Rendering::CL::RenderingContext rendering_context{ context, selected_device, scene_description, camera };
+        const CL::Scene scene{ context, scene_description, camera };
+        Rendering::CL::RenderingContext rendering_context{ context, selected_device, scene_description, scene };
 
         // Cleanup
         clReleaseContext(context);

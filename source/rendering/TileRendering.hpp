@@ -5,10 +5,7 @@
 #ifndef RABBIT_TILERENDERING_HPP
 #define RABBIT_TILERENDERING_HPP
 
-#include "RenderingData.hpp"
 #include "RenderingKernels.hpp"
-#include "SceneParser.hpp"
-#include "Camera.hpp"
 
 namespace Rendering
 {
@@ -43,10 +40,8 @@ struct TileDescription
 class TileRendering
 {
 public:
-    TileRendering(cl_context context, cl_device_id device,
-                  cl_command_queue_properties queue_properties,
-                  const SceneDescription& scene_description,
-                  const Camera& camera);
+    TileRendering(cl_context context, cl_device_id device, cl_command_queue_properties queue_properties,
+                  const SceneDescription& scene_description, const ::CL::Scene& scene);
 
     ~TileRendering() noexcept;
 
@@ -68,13 +63,6 @@ private:
 
     // Rendering data
     RenderingData rendering_data;
-
-    // Buffer with the spheres in the scene
-    const unsigned int num_spheres;
-    cl_mem d_spheres;
-
-    // Buffer with the camera used to render the scene
-    cl_mem d_camera;
 
     // Rendering kernels
     RenderingKernels rendering_kernel;

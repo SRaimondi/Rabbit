@@ -15,7 +15,7 @@ namespace CL
 {
 
 RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename,
-                                   const RenderingData& rendering_data)
+                                   const RenderingData& rendering_data, const ::CL::Scene& scene)
     : initialisation_kernel{ nullptr }, intersect_kernel{ nullptr },
       update_radiance_kernel{ nullptr }, deposit_samples_kernel{ nullptr }
 {
@@ -28,7 +28,7 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, cons
         SetupKernels(kernel_program);
 
         // Set arguments from the given rendering data
-        SetKernelArguments(rendering_data);
+        SetKernelArguments(rendering_data, scene);
     }
     catch (const std::exception& ex)
     {
@@ -89,9 +89,10 @@ void RenderingKernels::SetupKernels(cl_program kernel_program)
     CL_CHECK_STATUS(err_code);
 }
 
-void RenderingKernels::SetKernelArguments(const RenderingData& rendering_data)
+void RenderingKernels::SetKernelArguments(const RenderingData& rendering_data, const ::CL::Scene& scene)
 {
     // Set initialisation arguments
+    CL_CHECK_CALL(clSetKernelArg(initialisation_kernel, 0, sizeof(cl_mem), &scene.d_camera));
     CL_CHECK_CALL(clSetKernelArg(initialisation_kernel, 1, sizeof(cl_mem), &rendering_data.d_rays.origin_x));
     CL_CHECK_CALL(clSetKernelArg(initialisation_kernel, 2, sizeof(cl_mem), &rendering_data.d_rays.origin_y));
     CL_CHECK_CALL(clSetKernelArg(initialisation_kernel, 3, sizeof(cl_mem), &rendering_data.d_rays.origin_z));

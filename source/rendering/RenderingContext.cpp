@@ -15,9 +15,9 @@ namespace CL
 {
 
 RenderingContext::RenderingContext(cl_context context, cl_device_id device,
-                                   const SceneDescription& scene_description, const Camera& camera)
+                                   const SceneDescription& scene_description, const ::CL::Scene& scene)
     : target_context{ context }, target_device{ device },
-      tile_rendering_context{ context, device, CL_QUEUE_PROFILING_ENABLE, scene_description, camera }
+      tile_rendering_context{ context, device, CL_QUEUE_PROFILING_ENABLE, scene_description, scene }
 {
     try
     {
