@@ -219,7 +219,7 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
 /*
  * Initialise kernel only sets the ray depth to DONE and the seed for the random number generation
  */
-__kernel void Initialise(// The ray depth is set to RAY_TO_RESTART_DEPTH so the Restart kernel sets it to the proper values for the first tile
+__kernel void Initialise(// The ray depth is set to RAY_FIRST_TILE_DEPTH so the Restart kernel sets it to the proper values for the first tile
                          __global unsigned int* ray_depth,
                          // XOrsShift state
                          __global unsigned int* xorshift_state,
