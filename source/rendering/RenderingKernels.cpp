@@ -229,7 +229,6 @@ void RenderingKernels::SetupInitialiseLaunchConfig(const TileDescription& tile_d
     initialise_launch_config.local_size = RoundDown(wg_info.second, wg_info.first);
     initialise_launch_config.global_size = RoundUp(static_cast<size_t>(tile_description.TotalSamples()),
                                                    initialise_launch_config.local_size);
-    initialise_launch_config.offset = 0;
 }
 
 void RenderingKernels::SetupRestartLaunchConfig(const TileDescription& tile_description, cl_device_id device)
@@ -240,7 +239,6 @@ void RenderingKernels::SetupRestartLaunchConfig(const TileDescription& tile_desc
     restart_launch_config.local_size = RoundDown(wg_info.second, wg_info.first);
     restart_launch_config.global_size = RoundUp(static_cast<size_t>(tile_description.TotalSamples()),
                                                 restart_launch_config.local_size);
-    restart_launch_config.offset = 0;
 }
 
 void RenderingKernels::SetupIntersectLaunchConfig(const TileDescription& tile_description, cl_device_id device)
@@ -251,7 +249,6 @@ void RenderingKernels::SetupIntersectLaunchConfig(const TileDescription& tile_de
     intersect_launch_config.local_size = RoundDown(wg_info.second, wg_info.first);
     intersect_launch_config.global_size = RoundUp(static_cast<size_t>(tile_description.TotalSamples()),
                                                   intersect_launch_config.local_size);
-    intersect_launch_config.offset = 0;
 }
 
 void RenderingKernels::Cleanup() noexcept
