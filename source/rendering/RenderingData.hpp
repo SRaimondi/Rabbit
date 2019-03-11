@@ -104,6 +104,9 @@ public:
     cl_mem sample_offset_x;
     cl_mem sample_offset_y;
 
+    // Number of samples done, single cl_uint
+    cl_mem samples_done;
+
 private:
     // Cleanup all buffers without throwing
     void Cleanup() noexcept;
@@ -164,7 +167,7 @@ struct RenderingData
     // XOrShift state for random number generation
     XOrShift d_xorshift_state;
 
-    RenderingData(cl_context context, unsigned int num_pixels, unsigned int total_samples);
+    RenderingData(cl_context context, unsigned int num_pixels, unsigned int total_tile_samples);
 };
 
 } // CL namespace

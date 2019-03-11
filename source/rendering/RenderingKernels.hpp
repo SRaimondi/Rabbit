@@ -7,6 +7,7 @@
 
 #include "RenderingData.hpp"
 #include "Scene.hpp"
+#include "TileDescription.hpp"
 
 #include <string>
 
@@ -21,12 +22,15 @@ class RenderingKernels
 public:
     RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename,
                      const RenderingData& rendering_data,
-                     const SceneDescription& scene_description, const ::CL::Scene& scene);
+                     const TileDescription& tile_description, const ::CL::Scene& scene);
 
     ~RenderingKernels() noexcept;
 
     // Data initialisation
     cl_kernel initialise_kernel;
+
+    // If a ray is done, sends it to the next sample
+    cl_kernel restart_sample_kernel;
 
     // Intersect samples ray with spheres
     cl_kernel intersect_kernel;
@@ -46,15 +50,19 @@ private:
 
     // Set kernel arguments
     void SetKernelArgs(const RenderingData& rendering_data,
-                       const SceneDescription& scene_description, const ::CL::Scene& scene);
+                       const TileDescription& tile_description, const ::CL::Scene& scene);
 
     // Set arguments for Initialise kernel
     void SetInitialiseKernelArgs(const RenderingData& rendering_data,
-                                 const SceneDescription& scene_description, const ::CL::Scene& scene);
+                                 const TileDescription& tile_description, const ::CL::Scene& scene);
+
+    // Set argument for Restart kernel
+    void SetRestartKernelArgs(const RenderingData& rendering_data,
+                              const TileDescription& tile_description, const ::CL::Scene& scene);
 
     // Set arguments for Intersect kernel
     void SetIntersectKernelArgs(const RenderingData& rendering_data,
-                                const SceneDescription& scene_description, const ::CL::Scene& scene);
+                                const TileDescription& tile_description, const ::CL::Scene& scene);
 
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;

@@ -16,8 +16,8 @@ namespace CL
 
 RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename,
                                    const RenderingData& rendering_data,
-                                   const SceneDescription& scene_description, const ::CL::Scene& scene)
-    : initialise_kernel{ nullptr }, intersect_kernel{ nullptr },
+                                   const TileDescription& tile_description, const ::CL::Scene& scene)
+    : initialise_kernel{ nullptr }, restart_sample_kernel{ nullptr }, intersect_kernel{ nullptr },
       update_radiance_kernel{ nullptr }, deposit_samples_kernel{ nullptr }
 {
     try
@@ -29,7 +29,10 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, cons
         SetupKernels(kernel_program);
 
         // Set arguments from the given rendering data
-        SetKernelArgs(rendering_data, scene_description, scene);
+        SetKernelArgs(rendering_data, tile_description, scene);
+
+        // Release program
+        CL_CHECK_CALL(clReleaseProgram(kernel_program));
     }
     catch (const std::exception& ex)
     {
@@ -82,84 +85,114 @@ void RenderingKernels::SetupKernels(cl_program kernel_program)
     cl_int err_code{ CL_SUCCESS };
     initialise_kernel = clCreateKernel(kernel_program, "Initialise", &err_code);
     CL_CHECK_STATUS(err_code);
+    restart_sample_kernel = clCreateKernel(kernel_program, "RestartSample", &err_code);
+    CL_CHECK_STATUS(err_code);
     intersect_kernel = clCreateKernel(kernel_program, "Intersect", &err_code);
     CL_CHECK_STATUS(err_code);
-    update_radiance_kernel = clCreateKernel(kernel_program, "UpdateRadiance", &err_code);
-    CL_CHECK_STATUS(err_code);
-    deposit_samples_kernel = clCreateKernel(kernel_program, "DepositSamples", &err_code);
-    CL_CHECK_STATUS(err_code);
+//    update_radiance_kernel = clCreateKernel(kernel_program, "UpdateRadiance", &err_code);
+//    CL_CHECK_STATUS(err_code);
+//    deposit_samples_kernel = clCreateKernel(kernel_program, "DepositSamples", &err_code);
+//    CL_CHECK_STATUS(err_code);
 }
 
 void RenderingKernels::SetKernelArgs(const RenderingData& rendering_data,
-                                     const SceneDescription& scene_description, const ::CL::Scene& scene)
+                                     const TileDescription& tile_description, const ::CL::Scene& scene)
 {
-    // Setup Initialise kernel
-    SetInitialiseKernelArgs(rendering_data, scene_description, scene);
-
-    // Setup Intersect kernel
-    SetIntersectKernelArgs(rendering_data, scene_description, scene);
+    SetInitialiseKernelArgs(rendering_data, tile_description, scene);
+    SetRestartKernelArgs(rendering_data, tile_description, scene);
+    SetIntersectKernelArgs(rendering_data, tile_description, scene);
 }
 
 void RenderingKernels::SetInitialiseKernelArgs(const RenderingData& rendering_data,
-                                               const SceneDescription& scene_description, const ::CL::Scene& scene)
+                                               const TileDescription& tile_description, const ::CL::Scene& scene)
 {
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 0, sizeof(cl_mem), &scene.d_camera));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 1, sizeof(cl_mem), &rendering_data.d_rays.origin_x));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 2, sizeof(cl_mem), &rendering_data.d_rays.origin_y));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 3, sizeof(cl_mem), &rendering_data.d_rays.origin_z));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 4, sizeof(cl_mem), &rendering_data.d_rays.direction_x));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 5, sizeof(cl_mem), &rendering_data.d_rays.direction_y));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 6, sizeof(cl_mem), &rendering_data.d_rays.direction_z));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 7, sizeof(cl_mem), &rendering_data.d_rays.depth));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 8, sizeof(cl_mem),
+    cl_uint arg_index{ 0 };
+    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.depth));
+    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_xorshift_state.state));
+    const cl_uint total_samples = tile_description.TotalSamples();
+    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, arg_index++, sizeof(unsigned int), &total_samples));
+}
+
+void RenderingKernels::SetRestartKernelArgs(const RenderingData& rendering_data,
+                                            const TileDescription& tile_description, const ::CL::Scene& scene)
+{
+    cl_uint arg_index{ 0 };
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &scene.d_camera));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_x));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_y));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_z));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_rays.direction_x));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_rays.direction_y));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_rays.direction_z));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.depth));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
                                  &rendering_data.d_intersections.primitive_index));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 9, sizeof(cl_mem), &rendering_data.d_samples.Li_r));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 10, sizeof(cl_mem), &rendering_data.d_samples.Li_g));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 11, sizeof(cl_mem), &rendering_data.d_samples.Li_b));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 12, sizeof(cl_mem), &rendering_data.d_samples.beta_r));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 13, sizeof(cl_mem), &rendering_data.d_samples.beta_g));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 14, sizeof(cl_mem), &rendering_data.d_samples.beta_b));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 15, sizeof(cl_mem), &rendering_data.d_samples.pixel_x));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 16, sizeof(cl_mem), &rendering_data.d_samples.pixel_y));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 17, sizeof(cl_mem), &rendering_data.d_samples.sample_offset_x));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 18, sizeof(cl_mem), &rendering_data.d_samples.sample_offset_y));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 19, sizeof(cl_mem), &rendering_data.d_pixels.pixel_r));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 20, sizeof(cl_mem), &rendering_data.d_pixels.pixel_g));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 21, sizeof(cl_mem), &rendering_data.d_pixels.pixel_b));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 22, sizeof(cl_mem), &rendering_data.d_pixels.filter_weight));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 23, sizeof(cl_mem), &rendering_data.d_xorshift_state.state));
-    // We don't set argument 24 and 25, they are set when we render a specific tile
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 26, sizeof(unsigned int), &scene_description.tile_width));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 27, sizeof(unsigned int), &scene_description.tile_height));
-    CL_CHECK_CALL(clSetKernelArg(initialise_kernel, 28, sizeof(unsigned int), &scene_description.pixel_samples));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_samples.Li_r));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_samples.Li_g));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_samples.Li_b));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_samples.beta_r));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_samples.beta_g));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_samples.beta_b));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_samples.pixel_x));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_samples.pixel_y));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_samples.sample_offset_x));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_samples.sample_offset_y));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_pixels.pixel_r));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_pixels.pixel_g));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_pixels.pixel_b));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_pixels.filter_weight));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_xorshift_state.state));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(unsigned int),
+                                 &tile_description.tile_width));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(unsigned int),
+                                 &tile_description.tile_height));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(unsigned int),
+                                 &tile_description.pixel_samples));
+    CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_samples.samples_done));
 }
 
 void RenderingKernels::SetIntersectKernelArgs(const RenderingData& rendering_data,
-                                              const SceneDescription& scene_description, const ::CL::Scene& scene)
+                                              const TileDescription& tile_description, const ::CL::Scene& scene)
 {
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 0, sizeof(cl_mem), &scene.d_spheres));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 1, sizeof(unsigned int), &scene.num_spheres));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 2, sizeof(cl_mem), &rendering_data.d_rays.origin_x));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 3, sizeof(cl_mem), &rendering_data.d_rays.origin_y));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 4, sizeof(cl_mem), &rendering_data.d_rays.origin_z));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 5, sizeof(cl_mem), &rendering_data.d_rays.direction_x));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 6, sizeof(cl_mem), &rendering_data.d_rays.direction_y));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 7, sizeof(cl_mem), &rendering_data.d_rays.direction_z));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 8, sizeof(cl_mem), &rendering_data.d_intersections.hit_point_x));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 9, sizeof(cl_mem), &rendering_data.d_intersections.hit_point_y));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 10, sizeof(cl_mem), &rendering_data.d_intersections.hit_point_z));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 11, sizeof(cl_mem), &rendering_data.d_intersections.normal_x));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 12, sizeof(cl_mem), &rendering_data.d_intersections.normal_y));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 13, sizeof(cl_mem), &rendering_data.d_intersections.normal_z));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 14, sizeof(cl_mem), &rendering_data.d_intersections.uv_s));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 15, sizeof(cl_mem), &rendering_data.d_intersections.uv_t));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 16, sizeof(cl_mem), &rendering_data.d_intersections.primitive_index));
-    // We don't set argument 17 and 18, they are set when we render the specific tile
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 19, sizeof(unsigned int), &scene_description.tile_width));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 20, sizeof(unsigned int), &scene_description.tile_height));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 21, sizeof(unsigned int), &scene_description.pixel_samples));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 22, sizeof(unsigned int), &scene_description.image_width));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, 23, sizeof(unsigned int), &scene_description.image_height));
+    cl_uint arg_index{ 0 };
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &scene.d_spheres));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(unsigned int), &scene.num_spheres));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_x));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_y));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_z));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.direction_x));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.direction_y));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.direction_z));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.depth));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.hit_point_x));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.hit_point_y));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.hit_point_z));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.normal_x));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.normal_y));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.normal_z));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_intersections.uv_s));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_intersections.uv_t));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.primitive_index));
+    const cl_uint total_samples = tile_description.TotalSamples();
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(unsigned int), &total_samples));
 }
 
 void RenderingKernels::Cleanup() noexcept

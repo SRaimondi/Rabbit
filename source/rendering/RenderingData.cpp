@@ -183,6 +183,11 @@ Samples::Samples(cl_context context, unsigned int num_samples)
         CL_CHECK_STATUS(err_code);
         sample_offset_y = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, nullptr, &err_code);
         CL_CHECK_STATUS(err_code);
+
+        cl_uint samples_done_init{ 0 };
+        samples_done = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                      sizeof(cl_uint), &samples_done_init, &err_code);
+        CL_CHECK_STATUS(err_code);
     }
     catch (const std::exception& ex)
     {
@@ -211,6 +216,7 @@ void Samples::Cleanup() noexcept
         RELEASE(pixel_y)
         RELEASE(sample_offset_x)
         RELEASE(sample_offset_y)
+        RELEASE(samples_done)
     }
     catch (const std::exception& ex)
     {
@@ -305,12 +311,12 @@ void XOrShift::Cleanup() noexcept
     }
 }
 
-RenderingData::RenderingData(cl_context context, unsigned int num_pixels, unsigned int total_samples)
-    : d_rays{ context, total_samples },
-      d_intersections{ context, total_samples },
-      d_samples{ context, total_samples },
+RenderingData::RenderingData(cl_context context, unsigned int num_pixels, unsigned int total_tile_samples)
+    : d_rays{ context, total_tile_samples },
+      d_intersections{ context, total_tile_samples },
+      d_samples{ context, total_tile_samples },
       d_pixels{ context, num_pixels },
-      d_xorshift_state{ context, total_samples }
+      d_xorshift_state{ context, total_tile_samples }
 {}
 
 } // CL namespace
