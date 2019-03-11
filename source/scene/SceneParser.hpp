@@ -30,10 +30,16 @@ struct SceneDescription
     unsigned int tile_width, tile_height;
     // Samples per-pixel
     unsigned int pixel_samples;
+
     // Spheres in the scene
     std::vector<Sphere> loaded_spheres;
 
     SceneDescription();
+
+    unsigned int NumSpheres() const noexcept
+    {
+        return static_cast<unsigned int>(loaded_spheres.size());
+    }
 };
 
 class SceneParser

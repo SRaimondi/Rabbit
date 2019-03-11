@@ -10,7 +10,7 @@ namespace CL
 {
 
 Scene::Scene(cl_context context, const SceneDescription& scene_description, const ::Rendering::Camera& camera)
-    : d_spheres{ nullptr }, num_spheres{ static_cast<unsigned int>(scene_description.loaded_spheres.size()) },
+    : d_spheres{ nullptr }, num_spheres{ scene_description.NumSpheres() },
       d_camera{ nullptr }
 {
     cl_int err_code{ CL_SUCCESS };
