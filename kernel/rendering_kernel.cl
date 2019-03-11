@@ -374,12 +374,8 @@ __kernel void RestartSample(__constant const Camera* camera,
 __kernel void Intersect(// Spheres in the scene
                         __global const Sphere* spheres, unsigned int num_spheres,
                         // Ray origin and direction
-                        __global const float* ray_origin_x,
-                        __global const float* ray_origin_y, 
-                        __global const float* ray_origin_z,
-                        __global const float* ray_direction_x,
-                        __global const float* ray_direction_y, 
-                        __global const float* ray_direction_z,
+                        __global const float* ray_origin_x, __global const float* ray_origin_y, __global const float* ray_origin_z,
+                        __global const float* ray_direction_x, __global const float* ray_direction_y, __global const float* ray_direction_z,
                         __global const unsigned int* ray_depth,
                         // Intersection information
                         __global float* hit_point_x, __global float* hit_point_y, __global float* hit_point_z,

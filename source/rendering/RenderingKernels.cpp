@@ -17,8 +17,8 @@ namespace CL
 RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename,
                                    const RenderingData& rendering_data,
                                    const TileDescription& tile_description, const ::CL::Scene& scene)
-    : initialise_kernel{ nullptr }, restart_sample_kernel{ nullptr }, intersect_kernel{ nullptr },
-      update_radiance_kernel{ nullptr }, deposit_samples_kernel{ nullptr }
+    : initialise_kernel{ nullptr }, restart_sample_kernel{ nullptr }, intersect_kernel{ nullptr } /*,
+      update_radiance_kernel{ nullptr }, deposit_samples_kernel{ nullptr }*/
 {
     try
     {
@@ -28,11 +28,14 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, cons
         // Get kernels from program
         SetupKernels(kernel_program);
 
+        // Release program
+        CL_CHECK_CALL(clReleaseProgram(kernel_program));
+
         // Set arguments from the given rendering data
         SetKernelArgs(rendering_data, tile_description, scene);
 
-        // Release program
-        CL_CHECK_CALL(clReleaseProgram(kernel_program));
+        // Compute the sizes for launching the kernels
+        SetupLaunchConfig(device);
     }
     catch (const std::exception& ex)
     {
@@ -195,6 +198,46 @@ void RenderingKernels::SetIntersectKernelArgs(const RenderingData& rendering_dat
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(unsigned int), &total_samples));
 }
 
+std::pair<size_t, size_t> RenderingKernels::GetWGInfo(cl_kernel kernel, cl_device_id device) const
+{
+    // Get the preferred multiple size multiple for the device
+    size_t preferred_wg_size_multiple{ 0 };
+    CL_CHECK_CALL(clGetKernelWorkGroupInfo(initialise_kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+                                           sizeof(size_t), &preferred_wg_size_multiple, nullptr));
+
+    // Get the maximum size we can use as work-group size for our kernel
+    size_t max_wg_size{ 0 };
+    CL_CHECK_CALL(clGetKernelWorkGroupInfo(initialise_kernel, device, CL_KERNEL_WORK_GROUP_SIZE,
+                                           sizeof(size_t), &max_wg_size, nullptr));
+
+    return { preferred_wg_size_multiple, max_wg_size };
+}
+
+void RenderingKernels::SetupLaunchConfig(cl_device_id device)
+{
+    SetupInitialiseLaunchConfig(device);
+    SetupRestartLaunchConfig(device);
+    SetupIntersectLaunchConfig(device);
+}
+
+void RenderingKernels::SetupInitialiseLaunchConfig(cl_device_id device)
+{
+    // Get the preferred sizes for the kernel
+    const auto wg_info = GetWGInfo(initialise_kernel, device);
+}
+
+void RenderingKernels::SetupRestartLaunchConfig(cl_device_id device)
+{
+    // Get the preferred sizes for the kernel
+    const auto wg_info = GetWGInfo(initialise_kernel, device);
+}
+
+void RenderingKernels::SetupIntersectLaunchConfig(cl_device_id device)
+{
+    // Get the preferred sizes for the kernel
+    const auto wg_info = GetWGInfo(initialise_kernel, device);
+}
+
 void RenderingKernels::Cleanup() noexcept
 {
     try
@@ -203,13 +246,13 @@ void RenderingKernels::Cleanup() noexcept
         {
             CL_CHECK_CALL(clReleaseKernel(initialise_kernel));
         }
+        if (restart_sample_kernel != nullptr)
+        {
+            CL_CHECK_CALL(clReleaseKernel(restart_sample_kernel));
+        }
         if (intersect_kernel != nullptr)
         {
             CL_CHECK_CALL(clReleaseKernel(intersect_kernel));
-        }
-        if (deposit_samples_kernel != nullptr)
-        {
-            CL_CHECK_CALL(clReleaseKernel(deposit_samples_kernel));
         }
     }
     catch (const std::exception& ex)
