@@ -229,7 +229,7 @@ __kernel void Initialise(// The ray depth is set to RAY_TO_RESTART_DEPTH so the 
     const unsigned int tid = get_global_id(0);
     if (tid < total_samples)
     {
-        ray_depth[tid] = RAY_TO_RESTART_DEPTH;
+        ray_depth[tid] = RAY_FIRST_TILE_DEPTH;
         xorshift_state[tid] = XORSHIFT_STATE_START + tid;
     }
 }
