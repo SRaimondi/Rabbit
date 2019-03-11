@@ -51,6 +51,48 @@ RenderingKernels::~RenderingKernels() noexcept
     Cleanup();
 }
 
+void RenderingKernels::RunInitialise(cl_command_queue queue, cl_uint num_wait_events, const cl_event* wait_events,
+                                     cl_event* kernel_event)
+{
+    CL_CHECK_CALL(clEnqueueNDRangeKernel(queue,
+                                         initialise_kernel,
+                                         1,
+                                         &initialise_launch_config.offset,
+                                         &initialise_launch_config.global_size,
+                                         &initialise_launch_config.local_size,
+                                         num_wait_events,
+                                         wait_events,
+                                         kernel_event));
+}
+
+void RenderingKernels::RunRestart(cl_command_queue queue, cl_uint num_wait_events, const cl_event* wait_events,
+                                  cl_event* kernel_event)
+{
+    CL_CHECK_CALL(clEnqueueNDRangeKernel(queue,
+                                         restart_sample_kernel,
+                                         1,
+                                         &restart_launch_config.offset,
+                                         &restart_launch_config.global_size,
+                                         &restart_launch_config.local_size,
+                                         num_wait_events,
+                                         wait_events,
+                                         kernel_event));
+}
+
+void RenderingKernels::RunIntersect(cl_command_queue queue, cl_uint num_wait_events, const cl_event* wait_events,
+                                    cl_event* kernel_event)
+{
+    CL_CHECK_CALL(clEnqueueNDRangeKernel(queue,
+                                         intersect_kernel,
+                                         1,
+                                         &intersect_launch_config.offset,
+                                         &intersect_launch_config.global_size,
+                                         &intersect_launch_config.local_size,
+                                         num_wait_events,
+                                         wait_events,
+                                         kernel_event));
+}
+
 cl_program RenderingKernels::BuildProgram(cl_context context, cl_device_id device,
                                           const std::string& kernel_filename) const
 {

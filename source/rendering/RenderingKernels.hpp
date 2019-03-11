@@ -24,7 +24,8 @@ struct KernelLaunchSize
     size_t offset;
 
     constexpr explicit KernelLaunchSize(size_t g_s = 1, size_t l_s = 1, size_t o = 0) noexcept
-        : global_size{ g_s }, local_size{ l_s }, offset{ o } {}
+        : global_size{ g_s }, local_size{ l_s }, offset{ o }
+    {}
 };
 
 // This class is responsible for loading the kernel from a single file
@@ -37,23 +38,20 @@ public:
 
     ~RenderingKernels() noexcept;
 
-    // Data initialisation
-    cl_kernel initialise_kernel;
-    KernelLaunchSize initialise_launch_config;
+    // Launch the Initialise kernel
+    void RunInitialise(cl_command_queue queue,
+                       cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
+                       cl_event* kernel_event = nullptr);
 
-    // If a ray is done, sends it to the next sample
-    cl_kernel restart_sample_kernel;
-    KernelLaunchSize restart_launch_config;
+    // Launch the Restart kernel
+    void RunRestart(cl_command_queue queue,
+                    cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
+                    cl_event* kernel_event = nullptr);
 
-    // Intersect samples ray with spheres
-    cl_kernel intersect_kernel;
-    KernelLaunchSize intersect_launch_config;
-
-    // Update radiance kernel
-    // cl_kernel update_radiance_kernel;
-
-    // Deposit the sample comping radiance to the pixel it belongs to
-    // cl_kernel deposit_samples_kernel;
+    // Launch the Intersect kernel
+    void RunIntersect(cl_command_queue queue,
+                      cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
+                      cl_event* kernel_event = nullptr);
 
 private:
     // Load kernel program source and build program
@@ -95,6 +93,24 @@ private:
 
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;
+
+    // Data initialisation kernel
+    cl_kernel initialise_kernel;
+    KernelLaunchSize initialise_launch_config;
+
+    // If a ray is done, sends it to the next sample
+    cl_kernel restart_sample_kernel;
+    KernelLaunchSize restart_launch_config;
+
+    // Intersect samples ray with spheres
+    cl_kernel intersect_kernel;
+    KernelLaunchSize intersect_launch_config;
+
+    // Update radiance kernel
+    // cl_kernel update_radiance_kernel;
+
+    // Deposit the sample comping radiance to the pixel it belongs to
+    // cl_kernel deposit_samples_kernel;
 };
 
 } // CL namespace
