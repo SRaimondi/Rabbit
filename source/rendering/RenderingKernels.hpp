@@ -82,16 +82,16 @@ private:
     std::pair<size_t, size_t> GetWGInfo(cl_kernel kernel, cl_device_id device) const;
 
     // Setup kernel launch sizes
-    void SetupLaunchConfig(cl_device_id device);
+    void SetupLaunchConfig(const TileDescription& tile_description, cl_device_id device);
 
     // Setup launch config for Initialise kernel
-    void SetupInitialiseLaunchConfig(cl_device_id device);
+    void SetupInitialiseLaunchConfig(const TileDescription& tile_description, cl_device_id device);
 
     // Setup launch config for Restart kernel
-    void SetupRestartLaunchConfig(cl_device_id device);
+    void SetupRestartLaunchConfig(const TileDescription& tile_description, cl_device_id device);
 
     // Setup launch config for Intersect kernel
-    void SetupIntersectLaunchConfig(cl_device_id device);
+    void SetupIntersectLaunchConfig(const TileDescription& tile_description, cl_device_id device);
 
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;

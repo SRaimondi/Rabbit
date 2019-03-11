@@ -47,11 +47,25 @@ constexpr T DivideUp(const T& a, const T& b) noexcept
     return (a + b - 1) / b;
 }
 
+// Divide two values down to the next closest integer value
+template <typename T, typename std::enable_if_t<std::is_integral<T>::value, int> = 0>
+constexpr T DivideDown(const T& a, const T& b) noexcept
+{
+    return a / b;
+}
+
 // Round up the first value to the closest multiple of the second one
 template <typename T, typename std::enable_if_t<std::is_integral<T>::value, int> = 0>
 constexpr T RoundUp(const T& a, const T& b) noexcept
 {
     return DivideUp(a, b) * b;
+}
+
+// Round down the first value to the closest multiple of the second one
+template <typename T, typename std::enable_if_t<std::is_integral<T>::value, int> = 0>
+constexpr T RoundDown(const T& a, const T& b) noexcept
+{
+    return DivideDown(a, b) * b;
 }
 
 #endif //RABBIT_COMMON_HPP

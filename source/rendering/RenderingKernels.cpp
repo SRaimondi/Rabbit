@@ -5,6 +5,7 @@
 #include "RenderingKernels.hpp"
 #include "CLError.hpp"
 #include "FileIO.hpp"
+#include "Common.hpp"
 
 #include <iostream>
 #include <memory>
@@ -35,7 +36,7 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, cons
         SetKernelArgs(rendering_data, tile_description, scene);
 
         // Compute the sizes for launching the kernels
-        SetupLaunchConfig(device);
+        SetupLaunchConfig(tile_description, device);
     }
     catch (const std::exception& ex)
     {
@@ -113,7 +114,7 @@ void RenderingKernels::SetInitialiseKernelArgs(const RenderingData& rendering_da
     CL_CHECK_CALL(clSetKernelArg(initialise_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.depth));
     CL_CHECK_CALL(clSetKernelArg(initialise_kernel, arg_index++, sizeof(cl_mem),
                                  &rendering_data.d_xorshift_state.state));
-    const cl_uint total_samples = tile_description.TotalSamples();
+    const auto total_samples = static_cast<cl_uint>(tile_description.TotalSamples());
     CL_CHECK_CALL(clSetKernelArg(initialise_kernel, arg_index++, sizeof(unsigned int), &total_samples));
 }
 
@@ -194,7 +195,7 @@ void RenderingKernels::SetIntersectKernelArgs(const RenderingData& rendering_dat
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_intersections.uv_t));
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
                                  &rendering_data.d_intersections.primitive_index));
-    const cl_uint total_samples = tile_description.TotalSamples();
+    const auto total_samples = static_cast<cl_uint>(tile_description.TotalSamples());
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(unsigned int), &total_samples));
 }
 
@@ -213,29 +214,44 @@ std::pair<size_t, size_t> RenderingKernels::GetWGInfo(cl_kernel kernel, cl_devic
     return { preferred_wg_size_multiple, max_wg_size };
 }
 
-void RenderingKernels::SetupLaunchConfig(cl_device_id device)
+void RenderingKernels::SetupLaunchConfig(const TileDescription& tile_description, cl_device_id device)
 {
-    SetupInitialiseLaunchConfig(device);
-    SetupRestartLaunchConfig(device);
-    SetupIntersectLaunchConfig(device);
+    SetupInitialiseLaunchConfig(tile_description, device);
+    SetupRestartLaunchConfig(tile_description, device);
+    SetupIntersectLaunchConfig(tile_description, device);
 }
 
-void RenderingKernels::SetupInitialiseLaunchConfig(cl_device_id device)
+void RenderingKernels::SetupInitialiseLaunchConfig(const TileDescription& tile_description, cl_device_id device)
 {
     // Get the preferred sizes for the kernel
     const auto wg_info = GetWGInfo(initialise_kernel, device);
+    // Compute size for the kernel
+    initialise_launch_config.local_size = RoundDown(wg_info.second, wg_info.first);
+    initialise_launch_config.global_size = RoundUp(static_cast<size_t>(tile_description.TotalSamples()),
+                                                   initialise_launch_config.local_size);
+    initialise_launch_config.offset = 0;
 }
 
-void RenderingKernels::SetupRestartLaunchConfig(cl_device_id device)
+void RenderingKernels::SetupRestartLaunchConfig(const TileDescription& tile_description, cl_device_id device)
 {
     // Get the preferred sizes for the kernel
     const auto wg_info = GetWGInfo(initialise_kernel, device);
+    // Compute size for the kernel
+    restart_launch_config.local_size = RoundDown(wg_info.second, wg_info.first);
+    restart_launch_config.global_size = RoundUp(static_cast<size_t>(tile_description.TotalSamples()),
+                                                restart_launch_config.local_size);
+    restart_launch_config.offset = 0;
 }
 
-void RenderingKernels::SetupIntersectLaunchConfig(cl_device_id device)
+void RenderingKernels::SetupIntersectLaunchConfig(const TileDescription& tile_description, cl_device_id device)
 {
     // Get the preferred sizes for the kernel
     const auto wg_info = GetWGInfo(initialise_kernel, device);
+    // Compute size for the kernel
+    intersect_launch_config.local_size = RoundDown(wg_info.second, wg_info.first);
+    intersect_launch_config.global_size = RoundUp(static_cast<size_t>(tile_description.TotalSamples()),
+                                                  intersect_launch_config.local_size);
+    intersect_launch_config.offset = 0;
 }
 
 void RenderingKernels::Cleanup() noexcept
