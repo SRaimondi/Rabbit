@@ -12,7 +12,7 @@
 namespace CL
 {
 
-// Spheres and camera storage for the device
+// Scene storage for the device
 class Scene
 {
 public:

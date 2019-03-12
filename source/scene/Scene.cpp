@@ -28,7 +28,7 @@ Scene::Scene(cl_context context, const SceneDescription& scene_description, cons
         d_spheres = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, num_spheres * sizeof(Sphere),
                                    const_cast<Sphere*>(scene_description.loaded_spheres.data()), &err_code);
         CL_CHECK_STATUS(err_code);
-        
+
         d_material_indices = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                             num_spheres * sizeof(cl_uint),
                                             const_cast<unsigned int*>(scene_description.material_index.data()),
