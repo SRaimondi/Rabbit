@@ -65,8 +65,7 @@ private:
                        const TileDescription& tile_description, const ::CL::Scene& scene);
 
     // Set arguments for Initialise kernel
-    void SetInitialiseKernelArgs(const RenderingData& rendering_data,
-                                 const TileDescription& tile_description, const ::CL::Scene& scene);
+    void SetInitialiseKernelArgs(const RenderingData& rendering_data, const TileDescription& tile_description);
 
     // Set argument for Restart kernel
     void SetRestartKernelArgs(const RenderingData& rendering_data,

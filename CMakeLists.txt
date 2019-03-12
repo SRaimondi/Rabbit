@@ -50,3 +50,10 @@ else()
     target_link_libraries(Rabbit OpenCL::OpenCL)
 endif()
 
+# Specify flags for build
+IF (CMAKE_BUILD_TYPE MATCHES Debug)
+    TARGET_COMPILE_OPTIONS(Rabbit PRIVATE -march=native -Wall -Wextra)
+ELSEIF (CMAKE_BUILD_TYPE MATCHES Release)
+    TARGET_COMPILE_OPTIONS(Rabbit PRIVATE -march=native)
+ENDIF ()
+
