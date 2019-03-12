@@ -10,11 +10,11 @@
 #define RAY_DONE_DEPTH          4294967295u
 
 #define XORSHIFT_STATE_START    5293385u
+#define XORSHIFT_STATE_MULT     68435u
 
 #define TWO_PI                  6.28318530718f
 #define ONE_OVER_2PI            0.15915494309f
 #define EPS                     0.0001f
-
 
 /*
  * 2D / 3D vector struct
@@ -292,7 +292,7 @@ typedef union
     float f;
 } RandomFloatHelper;
 
-inline float GenerateFloat(__global unsigned int* xorshift_state)
+inline unsigned int NextUInt32(__global unsigned int* xorshift_state)
 {
     // Generate new state
     unsigned int new_state = *xorshift_state;
@@ -303,9 +303,14 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
     // Store new state
     *xorshift_state = new_state;
 
+    return new_state;
+}
+
+inline float GenerateFloat(__global unsigned int* xorshift_state)
+{
     // Compute float value
     RandomFloatHelper temp;
-    temp.ui = (new_state >> 9) | 0x3f800000u;
+    temp.ui = (NextUInt32(xorshift_state) >> 9) | 0x3f800000u;
 
     return temp.f - 1.f;
 }
@@ -324,7 +329,13 @@ __kernel void Initialise(// The ray depth is set to RAY_FIRST_TILE_DEPTH so the 
     if (tid < total_samples)
     {
         ray_depth[tid] = RAY_FIRST_TILE_DEPTH;
-        xorshift_state[tid] = XORSHIFT_STATE_START + tid;
+        unsigned int mult = 1;
+        unsigned int xorshift_init_state = 0;
+        do
+        {
+            xorshift_init_state = XORSHIFT_STATE_START + mult++ * XORSHIFT_STATE_MULT * tid;
+        } while (xorshift_init_state == 0);
+        xorshift_state[tid] = xorshift_init_state;
     }
 }
 
