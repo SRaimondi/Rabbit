@@ -74,82 +74,85 @@ void TileRendering::Render() const
         // Intersect the rays
         rendering_kernel.RunIntersect(command_queue, 1, &restart_event, &intersect_event);
 
-    }
 
-    cl_int err_code{ CL_SUCCESS };
-    auto normal_x = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                           rendering_data.d_intersections.normal_x,
-                                                           CL_MAP_READ,
-                                                           CL_TRUE,
-                                                           0,
-                                                           tile_description.TotalSamples() * sizeof(cl_float),
-                                                           1,
-                                                           &intersect_event,
-                                                           nullptr,
-                                                           &err_code));
-    CL_CHECK_STATUS(err_code);
-    auto normal_y = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                           rendering_data.d_intersections.normal_y,
-                                                           CL_MAP_READ,
-                                                           CL_TRUE,
-                                                           0,
-                                                           tile_description.TotalSamples() * sizeof(cl_float),
-                                                           1,
-                                                           &intersect_event,
-                                                           nullptr,
-                                                           &err_code));
-    CL_CHECK_STATUS(err_code);
-    auto normal_z = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                           rendering_data.d_intersections.normal_z,
-                                                           CL_MAP_READ,
-                                                           CL_TRUE,
-                                                           0,
-                                                           tile_description.TotalSamples() * sizeof(cl_float),
-                                                           1,
-                                                           &intersect_event,
-                                                           nullptr,
-                                                           &err_code));
-    CL_CHECK_STATUS(err_code);
-    auto primitive_index = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                                  rendering_data.d_intersections.primitive_index,
-                                                                  CL_MAP_READ,
-                                                                  CL_TRUE,
-                                                                  0,
-                                                                  tile_description.TotalSamples() * sizeof(cl_uint),
-                                                                  1,
-                                                                  &intersect_event,
-                                                                  nullptr,
-                                                                  &err_code));
-    CL_CHECK_STATUS(err_code);
+        // DEBUG
+        cl_int err_code{ CL_SUCCESS };
+        auto normal_x = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                               rendering_data.d_intersections.normal_x,
+                                                               CL_MAP_READ,
+                                                               CL_TRUE,
+                                                               0,
+                                                               tile_description.TotalSamples() * sizeof(cl_float),
+                                                               1,
+                                                               &intersect_event,
+                                                               nullptr,
+                                                               &err_code));
+        CL_CHECK_STATUS(err_code);
+        auto normal_y = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                               rendering_data.d_intersections.normal_y,
+                                                               CL_MAP_READ,
+                                                               CL_TRUE,
+                                                               0,
+                                                               tile_description.TotalSamples() * sizeof(cl_float),
+                                                               1,
+                                                               &intersect_event,
+                                                               nullptr,
+                                                               &err_code));
+        CL_CHECK_STATUS(err_code);
+        auto normal_z = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                               rendering_data.d_intersections.normal_z,
+                                                               CL_MAP_READ,
+                                                               CL_TRUE,
+                                                               0,
+                                                               tile_description.TotalSamples() * sizeof(cl_float),
+                                                               1,
+                                                               &intersect_event,
+                                                               nullptr,
+                                                               &err_code));
+        CL_CHECK_STATUS(err_code);
+        auto primitive_index = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                                      rendering_data.d_intersections.primitive_index,
+                                                                      CL_MAP_READ,
+                                                                      CL_TRUE,
+                                                                      0,
+                                                                      tile_description.TotalSamples() * sizeof(cl_uint),
+                                                                      1,
+                                                                      &intersect_event,
+                                                                      nullptr,
+                                                                      &err_code));
+        CL_CHECK_STATUS(err_code);
 
-    std::vector<unsigned char> uchar_raster(3 * tile_description.TotalPixels(), 0);
-    for (unsigned int i = 0; i != tile_description.TotalSamples(); i++)
-    {
-        if (primitive_index[i] != std::numeric_limits<cl_uint>::max())
+        std::vector<unsigned char> uchar_raster(3 * tile_description.TotalPixels(), 0);
+        for (unsigned int i = 0; i != tile_description.TotalSamples(); i++)
         {
-            uchar_raster[3 * i] = static_cast<unsigned char>(std::abs(normal_x[i]) * 255);
-            uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::abs(normal_y[i]) * 255);
-            uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::abs(normal_z[i]) * 255);
-        }
-        else
-        {
-            uchar_raster[3 * i] = 0;
-            uchar_raster[3 * i + 1] = 0;
-            uchar_raster[3 * i + 2] = 0;
-        }
+            if (primitive_index[i] != std::numeric_limits<cl_uint>::max())
+            {
+                uchar_raster[3 * i] = static_cast<unsigned char>(std::abs(normal_x[i]) * 255);
+                uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::abs(normal_y[i]) * 255);
+                uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::abs(normal_z[i]) * 255);
+            }
+            else
+            {
+                uchar_raster[3 * i] = 0;
+                uchar_raster[3 * i + 1] = 0;
+                uchar_raster[3 * i + 2] = 0;
+            }
 //        uchar_raster[3 * i] = static_cast<unsigned char>(std::abs(ray_direction_x[i]) * 255);
 //        uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::abs(ray_direction_y[i]) * 255);
 //        uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::abs(ray_direction_z[i]) * 255);
-    }
+        }
 
-    // Write image, set flip vertical axis before
-    stbi_flip_vertically_on_write(1);
-    if (!stbi_write_png("test.png", tile_description.tile_width, tile_description.tile_height, 3,
-                        uchar_raster.data(), 0))
-    {
-        throw std::runtime_error("Error creating PNG image");
+        // Write image, set flip vertical axis before
+        stbi_flip_vertically_on_write(1);
+        if (!stbi_write_png("test.png", tile_description.tile_width, tile_description.tile_height, 3,
+                            uchar_raster.data(), 0))
+        {
+            throw std::runtime_error("Error creating PNG image");
+        }
+        stbi_flip_vertically_on_write(0);
+
+        break;
     }
-    stbi_flip_vertically_on_write(0);
 }
 
 void TileRendering::Cleanup() noexcept
