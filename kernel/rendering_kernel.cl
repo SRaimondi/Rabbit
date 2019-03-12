@@ -338,7 +338,7 @@ __kernel void RestartSample(__constant const Camera* camera,
                 ray_origin_z[tid] = camera->eye_z;
 
                 // Generate direction and store
-                const float3 ray_direction = GenerateRayDirection(camera, px, py, 0.5f, 0.5f);
+                const float3 ray_direction = GenerateRayDirection(camera, px, py, sx, sy);
                 ray_direction_x[tid] = ray_direction.x;
                 ray_direction_y[tid] = ray_direction.y;
                 ray_direction_z[tid] = ray_direction.z;
