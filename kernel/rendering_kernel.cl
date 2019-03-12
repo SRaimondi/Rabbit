@@ -328,7 +328,10 @@ __kernel void Initialise(// The ray depth is set to RAY_FIRST_TILE_DEPTH so the 
     const unsigned int tid = get_global_id(0);
     if (tid < total_samples)
     {
+        // Ray depth is set such that the first Restart sets them up
         ray_depth[tid] = RAY_FIRST_TILE_DEPTH;
+
+        // Initialise xorshift random number generator state
         unsigned int mult = 1;
         unsigned int xorshift_init_state = 0;
         do
@@ -336,6 +339,7 @@ __kernel void Initialise(// The ray depth is set to RAY_FIRST_TILE_DEPTH so the 
             xorshift_init_state = XORSHIFT_STATE_START + mult++ * XORSHIFT_STATE_MULT * tid;
         } while (xorshift_init_state == 0);
         xorshift_state[tid] = xorshift_init_state;
+        (void)NextUInt32(&xorshift_state[tid]);
     }
 }
 
