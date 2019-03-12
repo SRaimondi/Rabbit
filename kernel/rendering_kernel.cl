@@ -17,12 +17,27 @@
 
 
 /*
- * 3D vector struct
+ * 2D / 3D vector struct
  */
+typedef struct
+{
+    float x, y;
+} Vector2;
+
+inline Vector2 NewVector2(float x, float y)
+{
+    return (Vector2){ .x = x, .y = y };
+}
+
 typedef struct 
 {
     float x, y, z;
 } Vector3;
+
+inline Vector3 NewVector3(float x, float y, float z)
+{
+    return (Vector3){ .x = x, .y = y, .z = z };
+}
 
 /*
  * Common utility functions
@@ -75,6 +90,47 @@ inline void CreateLocalBase(Vector3 n, Vector3* s, Vector3* t)
     t->x = s->y * n.z - s->z * n.y;
     t->y = s->z * n.x - s->x * n.z;
     t->z = s->x * n.y - s->y * n.x;
+}
+
+inline Vector2 ConcentricSampleDisk(float u0, float u1)
+{
+    // Map points to [-1, 1]
+    float u0_offset = 2.f * u0 - 1.f;
+    float u1_offset = 2.f * u1 - 1.f;
+
+    // Handle degenerate center
+    if (u0_offset == 0.f && u1_offset == 0.f)
+    {
+        return NewVector2(0.f, 0.f);
+    }
+
+    // Apply concentric mapping to point
+    float theta, r;
+    if (fabs(u0_offset) > fabs(u1_offset))
+    {
+        r = u0_offset;
+        theta = M_PI_4_F * (u1_offset / u0_offset);
+    }
+    else
+    {
+        r = u1_offset;
+        theta = M_PI_2_F - M_PI_4_F * (u0_offset / u1_offset);
+    }
+
+    return NewVector2(r * cos(theta), r * sin(theta));
+}
+
+inline Vector3 CosineSampleHemisphere(float u0, float u1)
+{
+    const Vector2 d = ConcentricSampleDisk(u0, u1);
+    const float y = sqrt(fmax(0.f, 1.f - d.x * d.x - d.y * d.y));
+    
+    return NewVector3(d.x, y, d.y);
+}
+
+inline float CosineSampleHemispherePdf(float cos_theta)
+{
+    return cos_theta * M_1_PI_F;
 }
 
 /*
