@@ -1,5 +1,8 @@
 <image_width> <image_height>
 <tile_width> <tile_height> <samples_per_pixel>
+<number_of_materials>
+<rho_r> <rho_g> <rho_b> <emission_r> <emission_g> <emission_b>
+...
 <number_of_spheres>
-<center_x> <center_y> <center_z> <radius>
+<center_x> <center_y> <center_z> <radius> <material_index>
 ...

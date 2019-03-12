@@ -19,6 +19,21 @@ struct Sphere
     {}
 };
 
+// Material struct layout
+struct DiffuseMaterial
+{
+    // Reflectance
+    float rho_r, rho_g, rho_b;
+    // Emission
+    float emission_r, emission_g, emission_b;
+
+    constexpr DiffuseMaterial(float rr, float rg, float rb,
+                              float er, float eg, float eb) noexcept
+        : rho_r{ rr }, rho_g{ rg }, rho_b{ rb },
+          emission_r{ er }, emission_g{ eg }, emission_b{ eb }
+    {}
+};
+
 // Utility class that parses the given file and returns a SceneDescription object
 struct SceneDescription
 {
@@ -31,12 +46,21 @@ struct SceneDescription
 
     // Spheres in the scene
     std::vector<Sphere> loaded_spheres;
+    // Indices of the materials
+    std::vector<unsigned int> material_index;
+    // Materials
+    std::vector<DiffuseMaterial> loaded_materials;
 
     SceneDescription();
 
     unsigned int NumSpheres() const noexcept
     {
         return static_cast<unsigned int>(loaded_spheres.size());
+    }
+
+    unsigned int NumMaterials() const noexcept
+    {
+        return static_cast<unsigned int>(loaded_materials.size());
     }
 };
 

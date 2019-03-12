@@ -22,7 +22,13 @@ public:
 
     // List of spheres
     cl_mem d_spheres;
-    const unsigned int num_spheres;
+    const cl_uint num_spheres;
+
+    // List of indices of material for each sphere
+    cl_mem d_material_indices;
+
+    // List of materials
+    cl_mem d_materials;
 
     // Camera on the device
     cl_mem d_camera;
