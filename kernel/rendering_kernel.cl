@@ -124,7 +124,7 @@ inline Vector3 CosineSampleHemisphere(float u0, float u1)
 {
     const Vector2 d = ConcentricSampleDisk(u0, u1);
     const float y = sqrt(fmax(0.f, 1.f - d.x * d.x - d.y * d.y));
-    
+
     return NewVector3(d.x, y, d.y);
 }
 
@@ -176,6 +176,17 @@ typedef struct
     // Origin and radius
     float center_x, center_y, center_z, radius;
 } Sphere;
+
+/*
+ * Diffuse material description
+ */ 
+typedef struct
+{
+    // Reflectance
+    float rho_r, rho_g, rho_b;
+    // Emission
+    float emission_r, emission_g, emission_b;
+} DiffuseMaterial;
 
 typedef struct
 {
@@ -271,17 +282,6 @@ inline Intersection FillIntersection(const Sphere sphere,
 
     return isect;
 }
-
-/*
- * Diffuse material description
- */ 
-typedef struct
-{
-    // Reflectance
-    float rho_r, rho_g, rho_b;
-    // Emission
-    float emission_r, emission_g, emission_b;
-} DiffuseMaterial;
 
 /*
  * Random number generation
