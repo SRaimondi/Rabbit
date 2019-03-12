@@ -11,6 +11,7 @@
 #include "stb_image_writer.hpp"
 
 #include <iostream>
+#include <limits>
 
 namespace Rendering
 {
