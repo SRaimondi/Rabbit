@@ -127,7 +127,7 @@ void TileRendering::Render() const
 
     // Write image, set flip vertical axis before
     stbi_flip_vertically_on_write(1);
-    if (!stbi_write_png("DaiCazzo.png", tile_description.tile_width, tile_description.tile_height, 3,
+    if (!stbi_write_png("test.png", tile_description.tile_width, tile_description.tile_height, 3,
                         uchar_raster.data(), 0))
     {
         throw std::runtime_error("Error creating PNG image");
