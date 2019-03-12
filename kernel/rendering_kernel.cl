@@ -398,19 +398,21 @@ __kernel void Intersect(// Spheres in the scene
         float extent = MAXFLOAT;
 
         // Intersect ray with spheres
-        unsigned int closest_sphere = num_spheres;
+        unsigned int closest_sphere_index = num_spheres;
+        Sphere closest_sphere;
         for (unsigned int s = 0; s != num_spheres; s++)
         {
             if (IntersectRaySphere(spheres[s], ox, oy, oz, dx, dy, dz, &extent))
             {
-                closest_sphere = s;
+                closest_sphere_index = s;
+                closest_sphere = spheres[closest_sphere_index];
             }
         }
 
-        if (closest_sphere != num_spheres)
+        if (closest_sphere_index != num_spheres)
         {
             // Compute intersection and store
-            const Intersection intersection = FillIntersection(spheres[closest_sphere], ox, oy, oz, dx, dy, dz, extent);
+            const Intersection intersection = FillIntersection(closest_sphere, ox, oy, oz, dx, dy, dz, extent);
             hit_point_x[tid] = intersection.hit_point_x;
             hit_point_y[tid] = intersection.hit_point_y;
             hit_point_z[tid] = intersection.hit_point_z;
@@ -421,7 +423,7 @@ __kernel void Intersect(// Spheres in the scene
             uv_t[tid] = intersection.uv_t;
 
             // Save index of primitive hit
-            primitive_index[tid] = closest_sphere;
+            primitive_index[tid] = closest_sphere_index;
         }
     }
 }

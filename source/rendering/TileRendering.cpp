@@ -51,183 +51,74 @@ void TileRendering::Render() const
     cl_event initialise_event;
     rendering_kernel.RunInitialise(command_queue, 0, nullptr, &initialise_event);
 
-    // Map memory to host and check what is inside
-    cl_int err_code{ CL_SUCCESS };
-    auto ray_depth = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
-                                                              rendering_data.d_rays.depth,
-                                                              CL_TRUE,
-                                                              CL_MAP_READ,
-                                                              0,
-                                                              tile_description.TotalSamples() * sizeof(cl_uint),
-                                                              1,
-                                                              &initialise_event,
-                                                              nullptr,
-                                                              &err_code));
-    CL_CHECK_STATUS(err_code);
-
-    auto xorshift_state = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
-                                                                   rendering_data.d_xorshift_state.state,
-                                                                   CL_TRUE,
-                                                                   CL_MAP_READ,
-                                                                   0,
-                                                                   tile_description.TotalSamples() * sizeof(cl_uint),
-                                                                   1,
-                                                                   &initialise_event,
-                                                                   nullptr,
-                                                                   &err_code));
-    CL_CHECK_STATUS(err_code);
-
     // Run restart kernel
     cl_event restart_event;
     rendering_kernel.RunRestart(command_queue, 1, &initialise_event, &restart_event);
-
-    // Map ray origin to debug
-    auto ray_origin_x = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                               rendering_data.d_rays.origin_x,
-                                                               CL_TRUE,
-                                                               CL_MAP_READ,
-                                                               0,
-                                                               tile_description.TotalSamples() * sizeof(cl_float),
-                                                               1,
-                                                               &restart_event,
-                                                               nullptr,
-                                                               &err_code));
-    CL_CHECK_STATUS(err_code);
-    auto ray_origin_y = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                               rendering_data.d_rays.origin_y,
-                                                               CL_TRUE,
-                                                               CL_MAP_READ,
-                                                               0,
-                                                               tile_description.TotalSamples() * sizeof(cl_float),
-                                                               1,
-                                                               &restart_event,
-                                                               nullptr,
-                                                               &err_code));
-    CL_CHECK_STATUS(err_code);
-    auto ray_origin_z = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                               rendering_data.d_rays.origin_z,
-                                                               CL_TRUE,
-                                                               CL_MAP_READ,
-                                                               0,
-                                                               tile_description.TotalSamples() * sizeof(cl_float),
-                                                               1,
-                                                               &restart_event,
-                                                               nullptr,
-                                                               &err_code));
-    CL_CHECK_STATUS(err_code);
-
-    // Map ray origin to debug
-    auto ray_direction_x = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                                  rendering_data.d_rays.direction_x,
-                                                                  CL_TRUE,
-                                                                  CL_MAP_READ,
-                                                                  0,
-                                                                  tile_description.TotalSamples() * sizeof(cl_float),
-                                                                  1,
-                                                                  &restart_event,
-                                                                  nullptr,
-                                                                  &err_code));
-    CL_CHECK_STATUS(err_code);
-    auto ray_direction_y = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                                  rendering_data.d_rays.direction_y,
-                                                                  CL_TRUE,
-                                                                  CL_MAP_READ,
-                                                                  0,
-                                                                  tile_description.TotalSamples() * sizeof(cl_float),
-                                                                  1,
-                                                                  &restart_event,
-                                                                  nullptr,
-                                                                  &err_code));
-    CL_CHECK_STATUS(err_code);
-    auto ray_direction_z = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                                  rendering_data.d_rays.direction_z,
-                                                                  CL_TRUE,
-                                                                  CL_MAP_READ,
-                                                                  0,
-                                                                  tile_description.TotalSamples() * sizeof(cl_float),
-                                                                  1,
-                                                                  &restart_event,
-                                                                  nullptr,
-                                                                  &err_code));
-    CL_CHECK_STATUS(err_code);
-
-    auto pixel_x = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
-                                                            rendering_data.d_samples.pixel_x,
-                                                            CL_TRUE,
-                                                            CL_MAP_READ,
-                                                            0,
-                                                            tile_description.TotalSamples() * sizeof(cl_uint),
-                                                            1,
-                                                            &restart_event,
-                                                            nullptr,
-                                                            &err_code));
-    CL_CHECK_STATUS(err_code);
-
-    auto pixel_y = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
-                                                            rendering_data.d_samples.pixel_y,
-                                                            CL_TRUE,
-                                                            CL_MAP_READ,
-                                                            0,
-                                                            tile_description.TotalSamples() * sizeof(cl_uint),
-                                                            1,
-                                                            &restart_event,
-                                                            nullptr,
-                                                            &err_code));
-    CL_CHECK_STATUS(err_code);
-
-    auto sample_x = static_cast<cl_float*>(clEnqueueMapBuffer(command_queue,
-                                                              rendering_data.d_samples.sample_offset_x,
-                                                              CL_TRUE,
-                                                              CL_MAP_READ,
-                                                              0,
-                                                              tile_description.TotalSamples() * sizeof(cl_float),
-                                                              1,
-                                                              &restart_event,
-                                                              nullptr,
-                                                              &err_code));
-    CL_CHECK_STATUS(err_code);
-
-    auto sample_y = static_cast<cl_float*>(clEnqueueMapBuffer(command_queue,
-                                                              rendering_data.d_samples.sample_offset_y,
-                                                              CL_TRUE,
-                                                              CL_MAP_READ,
-                                                              0,
-                                                              tile_description.TotalSamples() * sizeof(cl_float),
-                                                              1,
-                                                              &restart_event,
-                                                              nullptr,
-                                                              &err_code));
-    CL_CHECK_STATUS(err_code);
 
     // Run Intersect kernel
     cl_event intersect_event;
     rendering_kernel.RunIntersect(command_queue, 1, &restart_event, &intersect_event);
 
-    auto primitive_index = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
-                                                                    rendering_data.d_intersections.primitive_index,
-                                                                    CL_TRUE,
-                                                                    CL_MAP_READ,
-                                                                    0,
-                                                                    tile_description.TotalSamples() * sizeof(cl_uint),
-                                                                    1,
-                                                                    &intersect_event,
-                                                                    nullptr,
-                                                                    &err_code));
+    cl_int err_code{ CL_SUCCESS };
+    auto normal_x = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                           rendering_data.d_intersections.normal_x,
+                                                           CL_MAP_READ,
+                                                           CL_TRUE,
+                                                           0,
+                                                           tile_description.TotalSamples() * sizeof(cl_float),
+                                                           1,
+                                                           &intersect_event,
+                                                           nullptr,
+                                                           &err_code));
+    CL_CHECK_STATUS(err_code);
+    auto normal_y = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                           rendering_data.d_intersections.normal_y,
+                                                           CL_MAP_READ,
+                                                           CL_TRUE,
+                                                           0,
+                                                           tile_description.TotalSamples() * sizeof(cl_float),
+                                                           1,
+                                                           &intersect_event,
+                                                           nullptr,
+                                                           &err_code));
+    CL_CHECK_STATUS(err_code);
+    auto normal_z = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                           rendering_data.d_intersections.normal_z,
+                                                           CL_MAP_READ,
+                                                           CL_TRUE,
+                                                           0,
+                                                           tile_description.TotalSamples() * sizeof(cl_float),
+                                                           1,
+                                                           &intersect_event,
+                                                           nullptr,
+                                                           &err_code));
+    CL_CHECK_STATUS(err_code);
+    auto primitive_index = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                                  rendering_data.d_intersections.primitive_index,
+                                                                  CL_MAP_READ,
+                                                                  CL_TRUE,
+                                                                  0,
+                                                                  tile_description.TotalSamples() * sizeof(cl_uint),
+                                                                  1,
+                                                                  &intersect_event,
+                                                                  nullptr,
+                                                                  &err_code));
+    CL_CHECK_STATUS(err_code);
 
-    std::vector<unsigned char> uchar_raster(3 * tile_description.TotalPixels());
+    std::vector<unsigned char> uchar_raster(3 * tile_description.TotalPixels(), 0);
     for (unsigned int i = 0; i != tile_description.TotalSamples(); i++)
     {
         if (primitive_index[i] != std::numeric_limits<cl_uint>::max())
         {
-            uchar_raster[3 * i] = 255;
-            uchar_raster[3 * i + 1] = 0;
-            uchar_raster[3 * i + 2] = 0;
+            uchar_raster[3 * i] = static_cast<unsigned char>(std::abs(normal_x[i]) * 255);
+            uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::abs(normal_y[i]) * 255);
+            uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::abs(normal_z[i]) * 255);
         }
         else
         {
-            uchar_raster[3 * i] = 255;
-            uchar_raster[3 * i + 1] = 255;
-            uchar_raster[3 * i + 2] = 255;
+            uchar_raster[3 * i] = 0;
+            uchar_raster[3 * i + 1] = 0;
+            uchar_raster[3 * i + 2] = 0;
         }
 //        uchar_raster[3 * i] = static_cast<unsigned char>(std::abs(ray_direction_x[i]) * 255);
 //        uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::abs(ray_direction_y[i]) * 255);
