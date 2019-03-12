@@ -9,7 +9,7 @@
 #define RAY_TO_RESTART_DEPTH    4294967294u
 #define RAY_DONE_DEPTH          4294967295u
 
-#define XORSHIFT_STATE_START    52938u
+#define XORSHIFT_STATE_START    5293385u
 
 #define TWO_PI                  6.28318530718f
 #define ONE_OVER_2PI            0.15915494309f

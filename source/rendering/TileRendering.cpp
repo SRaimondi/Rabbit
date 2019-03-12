@@ -50,7 +50,19 @@ void TileRendering::Render() const
     // Map memory to host and check what is inside
     cl_int err_code{ CL_SUCCESS };
     auto ray_depth = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
-                                                                  rendering_data.d_rays.depth,
+                                                              rendering_data.d_rays.depth,
+                                                              CL_TRUE,
+                                                              CL_MAP_READ,
+                                                              0,
+                                                              tile_description.TotalSamples() * sizeof(cl_uint),
+                                                              1,
+                                                              &initialise_event,
+                                                              nullptr,
+                                                              &err_code));
+    CL_CHECK_STATUS(err_code);
+
+    auto xorshift_state = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
+                                                                  rendering_data.d_xorshift_state.state,
                                                                   CL_TRUE,
                                                                   CL_MAP_READ,
                                                                   0,
@@ -59,6 +71,7 @@ void TileRendering::Render() const
                                                                   &initialise_event,
                                                                   nullptr,
                                                                   &err_code));
+    CL_CHECK_STATUS(err_code);
 }
 
 void TileRendering::Cleanup() noexcept
