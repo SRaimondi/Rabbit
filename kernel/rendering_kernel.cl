@@ -50,6 +50,22 @@ inline bool SolveQuadratic(float a, float b, float c, float* t0, float* t1)
     return true;
 }
 
+inline void CreateLocalBase(float3 n, float3* s, float3* t)
+{
+    if (fabs(n.x) > fabs(n.y)) {
+        const float inv_norm = sqrt(n.x * n.x + n.z * n.z);
+        s->x = -n.z * inv_norm;
+        s->y = 0.f;
+        s->z = n.x * inv_norm;
+    } else {
+        const float inv_norm = sqrt(n.y * n.y + n.z * n.z);
+        s->x = 0.f;
+        s->y = n.z * inv_norm;
+        s->z = -n.y * inv_norm;
+    }
+    *t = cross(*s, n);
+}
+
 /*
  * Camera struct and function to generate a ray for a given pixel
  */
