@@ -49,9 +49,17 @@ void TileRendering::Render() const
 {
     // Synchronisation events
     cl_event initialise_event, restart_event, intersect_event;
+    // Profiling variables
+    cl_ulong start_time, end_time;
 
     // Run Initialise kernel
     rendering_kernel.RunInitialise(command_queue, 0, nullptr, &initialise_event);
+    CL_CHECK_CALL(clWaitForEvents(1, &initialise_event));
+    CL_CHECK_CALL(clGetEventProfilingInfo(initialise_event, CL_PROFILING_COMMAND_START,
+                                          sizeof(cl_ulong), &start_time, nullptr));
+    CL_CHECK_CALL(clGetEventProfilingInfo(initialise_event, CL_PROFILING_COMMAND_END,
+                                          sizeof(cl_ulong), &end_time, nullptr));
+    std::cout << "Initialise kernel time: " << end_time - start_time << " ns\n";
 
     cl_uint samples_done{ 0 };
     while (true)
@@ -70,10 +78,21 @@ void TileRendering::Render() const
 
         // Restart the samples
         rendering_kernel.RunRestart(command_queue, 1, &initialise_event, &restart_event);
+        CL_CHECK_CALL(clWaitForEvents(1, &restart_event));
+        CL_CHECK_CALL(clGetEventProfilingInfo(restart_event, CL_PROFILING_COMMAND_START,
+                                              sizeof(cl_ulong), &start_time, nullptr));
+        CL_CHECK_CALL(clGetEventProfilingInfo(restart_event, CL_PROFILING_COMMAND_END,
+                                              sizeof(cl_ulong), &end_time, nullptr));
+        std::cout << "Restart kernel time: " << end_time - start_time << " ns\n";
 
         // Intersect the rays
         rendering_kernel.RunIntersect(command_queue, 1, &restart_event, &intersect_event);
-
+        CL_CHECK_CALL(clWaitForEvents(1, &intersect_event));
+        CL_CHECK_CALL(clGetEventProfilingInfo(intersect_event, CL_PROFILING_COMMAND_START,
+                                              sizeof(cl_ulong), &start_time, nullptr));
+        CL_CHECK_CALL(clGetEventProfilingInfo(intersect_event, CL_PROFILING_COMMAND_END,
+                                              sizeof(cl_ulong), &end_time, nullptr));
+        std::cout << "Intersect kernel time: " << end_time - start_time << " ns\n";
 
         // DEBUG
         cl_int err_code{ CL_SUCCESS };
