@@ -47,17 +47,34 @@ TileRendering::~TileRendering() noexcept
 
 void TileRendering::Render() const
 {
+    // Synchronisation events
+    cl_event initialise_event, restart_event, intersect_event;
+
     // Run Initialise kernel
-    cl_event initialise_event;
     rendering_kernel.RunInitialise(command_queue, 0, nullptr, &initialise_event);
 
-    // Run restart kernel
-    cl_event restart_event;
-    rendering_kernel.RunRestart(command_queue, 1, &initialise_event, &restart_event);
+    cl_uint samples_done{ 0 };
+    while (true)
+    {
+        // Copy to host the number of samples that are done
+        CL_CHECK_CALL(clEnqueueReadBuffer(command_queue,
+                                          rendering_data.d_samples.samples_done,
+                                          CL_TRUE,
+                                          0, sizeof(cl_uint), &samples_done,
+                                          0, nullptr, nullptr));
+        // Check if we are done rendering
+        if (samples_done == tile_description.TotalSamples())
+        {
+            break;
+        }
 
-    // Run Intersect kernel
-    cl_event intersect_event;
-    rendering_kernel.RunIntersect(command_queue, 1, &restart_event, &intersect_event);
+        // Restart the samples
+        rendering_kernel.RunRestart(command_queue, 1, &initialise_event, &restart_event);
+
+        // Intersect the rays
+        rendering_kernel.RunIntersect(command_queue, 1, &restart_event, &intersect_event);
+
+    }
 
     cl_int err_code{ CL_SUCCESS };
     auto normal_x = static_cast<float*>(clEnqueueMapBuffer(command_queue,
