@@ -26,7 +26,7 @@ Rays::Rays(cl_context context, unsigned int num_rays)
       depth{ nullptr }
 {
     cl_int err_code{ CL_SUCCESS };
-    const size_t buffer_size{ num_rays * sizeof(float) };
+    const size_t buffer_size{ num_rays * sizeof(cl_float) };
 
     try
     {
@@ -87,7 +87,7 @@ Intersections::Intersections(cl_context context, unsigned int num_intersections)
       primitive_index{ nullptr }
 {
     cl_int err_code{ CL_SUCCESS };
-    const size_t buffer_size{ num_intersections * sizeof(float) };
+    const size_t buffer_size{ num_intersections * sizeof(cl_float) };
 
     try
     {
@@ -156,7 +156,7 @@ Samples::Samples(cl_context context, unsigned int num_samples)
       sample_offset_x{ nullptr }, sample_offset_y{ nullptr }
 {
     cl_int err_code{ CL_SUCCESS };
-    const size_t buffer_size{ num_samples * sizeof(float) };
+    const size_t buffer_size{ num_samples * sizeof(cl_float) };
 
     try
     {
@@ -231,7 +231,7 @@ Pixels::Pixels(cl_context context, unsigned int num_pixels)
       filter_weight{ nullptr }
 {
     cl_int err_code{ CL_SUCCESS };
-    const size_t buffer_size{ num_pixels * sizeof(float) };
+    const size_t buffer_size{ num_pixels * sizeof(cl_float) };
 
     try
     {

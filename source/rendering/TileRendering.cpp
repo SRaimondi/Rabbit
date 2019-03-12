@@ -62,15 +62,54 @@ void TileRendering::Render() const
     CL_CHECK_STATUS(err_code);
 
     auto xorshift_state = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
-                                                                  rendering_data.d_xorshift_state.state,
-                                                                  CL_TRUE,
-                                                                  CL_MAP_READ,
-                                                                  0,
-                                                                  tile_description.TotalSamples() * sizeof(cl_uint),
-                                                                  1,
-                                                                  &initialise_event,
-                                                                  nullptr,
-                                                                  &err_code));
+                                                                   rendering_data.d_xorshift_state.state,
+                                                                   CL_TRUE,
+                                                                   CL_MAP_READ,
+                                                                   0,
+                                                                   tile_description.TotalSamples() * sizeof(cl_uint),
+                                                                   1,
+                                                                   &initialise_event,
+                                                                   nullptr,
+                                                                   &err_code));
+    CL_CHECK_STATUS(err_code);
+
+    // Run restart kernel
+    cl_event restart_event;
+    rendering_kernel.RunRestart(command_queue, 1, &initialise_event, &restart_event);
+
+    // Map ray origin to debug
+    auto ray_origin_x = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                               rendering_data.d_rays.origin_x,
+                                                               CL_TRUE,
+                                                               CL_MAP_READ,
+                                                               0,
+                                                               tile_description.TotalSamples() * sizeof(cl_float),
+                                                               1,
+                                                               &restart_event,
+                                                               nullptr,
+                                                               &err_code));
+    CL_CHECK_STATUS(err_code);
+    auto ray_origin_y = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                               rendering_data.d_rays.origin_y,
+                                                               CL_TRUE,
+                                                               CL_MAP_READ,
+                                                               0,
+                                                               tile_description.TotalSamples() * sizeof(cl_float),
+                                                               1,
+                                                               &restart_event,
+                                                               nullptr,
+                                                               &err_code));
+    CL_CHECK_STATUS(err_code);
+    auto ray_origin_z = static_cast<float*>(clEnqueueMapBuffer(command_queue,
+                                                               rendering_data.d_rays.origin_z,
+                                                               CL_TRUE,
+                                                               CL_MAP_READ,
+                                                               0,
+                                                               tile_description.TotalSamples() * sizeof(cl_float),
+                                                               1,
+                                                               &restart_event,
+                                                               nullptr,
+                                                               &err_code));
     CL_CHECK_STATUS(err_code);
 }
 
