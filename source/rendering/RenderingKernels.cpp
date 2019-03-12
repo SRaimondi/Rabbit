@@ -237,8 +237,8 @@ void RenderingKernels::SetIntersectKernelArgs(const RenderingData& rendering_dat
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_intersections.uv_t));
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
                                  &rendering_data.d_intersections.primitive_index));
-    const auto total_samples = static_cast<cl_uint>(tile_description.TotalSamples());
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(unsigned int), &total_samples));
+    const auto total_samples = tile_description.TotalSamples();
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_uint), &total_samples));
 }
 
 std::pair<size_t, size_t> RenderingKernels::GetWGInfo(cl_kernel kernel, cl_device_id device) const

@@ -126,7 +126,7 @@ inline bool IntersectRaySphere(const Sphere sphere,
 
     // Solve to check if we intersect the sphere
     float t0, t1;
-    if (SolveQuadratic(a, b, c, &t0, &t1))
+    if (!SolveQuadratic(a, b, c, &t0, &t1))
     {
         return false;
     }
@@ -213,7 +213,7 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
     RandomFloatHelper temp;
     temp.ui = (new_state >> 9) | 0x3f800000u;
 
-    return temp.f;
+    return temp.f - 1.f;
 }
 
 /*
@@ -277,8 +277,8 @@ __kernel void RestartSample(__constant const Camera* camera,
             // Check if this is the first tile or not
             if (current_ray_depth == RAY_FIRST_TILE_DEPTH) 
             {
-                py = tile_y;
                 px = tile_x;
+                py = tile_y;
             }
             else 
             {
@@ -325,8 +325,8 @@ __kernel void RestartSample(__constant const Camera* camera,
 
                 // Generate a random offset in the pixel for each sample
                 // This is pure random now, next would be to stratify the samples
-                const float sx = GenerateFloat(xorshift_state + tid);
-                const float sy = GenerateFloat(xorshift_state + tid);
+                const float sx = GenerateFloat(&xorshift_state[tid]);
+                const float sy = GenerateFloat(&xorshift_state[tid]);
 
                 // Store
                 sample_offset_x[tid] = sx;
@@ -338,7 +338,7 @@ __kernel void RestartSample(__constant const Camera* camera,
                 ray_origin_z[tid] = camera->eye_z;
 
                 // Generate direction and store
-                const float3 ray_direction = GenerateRayDirection(camera, px, py, sx, sy);
+                const float3 ray_direction = GenerateRayDirection(camera, px, py, 0.5f, 0.5f);
                 ray_direction_x[tid] = ray_direction.x;
                 ray_direction_y[tid] = ray_direction.y;
                 ray_direction_z[tid] = ray_direction.z;
@@ -407,7 +407,7 @@ __kernel void Intersect(// Spheres in the scene
             }
         }
 
-        if (closest_sphere < num_spheres)
+        if (closest_sphere != num_spheres)
         {
             // Compute intersection and store
             const Intersection intersection = FillIntersection(spheres[closest_sphere], ox, oy, oz, dx, dy, dz, extent);

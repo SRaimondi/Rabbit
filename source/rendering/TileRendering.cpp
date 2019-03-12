@@ -6,6 +6,10 @@
 #include "FileIO.hpp"
 #include "CLError.hpp"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include "stb_image_writer.hpp"
+
 #include <iostream>
 
 namespace Rendering
@@ -147,6 +151,54 @@ void TileRendering::Render() const
                                                                   &err_code));
     CL_CHECK_STATUS(err_code);
 
+    auto pixel_x = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
+                                                            rendering_data.d_samples.pixel_x,
+                                                            CL_TRUE,
+                                                            CL_MAP_READ,
+                                                            0,
+                                                            tile_description.TotalSamples() * sizeof(cl_uint),
+                                                            1,
+                                                            &restart_event,
+                                                            nullptr,
+                                                            &err_code));
+    CL_CHECK_STATUS(err_code);
+
+    auto pixel_y = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
+                                                            rendering_data.d_samples.pixel_y,
+                                                            CL_TRUE,
+                                                            CL_MAP_READ,
+                                                            0,
+                                                            tile_description.TotalSamples() * sizeof(cl_uint),
+                                                            1,
+                                                            &restart_event,
+                                                            nullptr,
+                                                            &err_code));
+    CL_CHECK_STATUS(err_code);
+
+    auto sample_x = static_cast<cl_float*>(clEnqueueMapBuffer(command_queue,
+                                                              rendering_data.d_samples.sample_offset_x,
+                                                              CL_TRUE,
+                                                              CL_MAP_READ,
+                                                              0,
+                                                              tile_description.TotalSamples() * sizeof(cl_float),
+                                                              1,
+                                                              &restart_event,
+                                                              nullptr,
+                                                              &err_code));
+    CL_CHECK_STATUS(err_code);
+
+    auto sample_y = static_cast<cl_float*>(clEnqueueMapBuffer(command_queue,
+                                                              rendering_data.d_samples.sample_offset_y,
+                                                              CL_TRUE,
+                                                              CL_MAP_READ,
+                                                              0,
+                                                              tile_description.TotalSamples() * sizeof(cl_float),
+                                                              1,
+                                                              &restart_event,
+                                                              nullptr,
+                                                              &err_code));
+    CL_CHECK_STATUS(err_code);
+
     // Run Intersect kernel
     cl_event intersect_event;
     rendering_kernel.RunIntersect(command_queue, 1, &restart_event, &intersect_event);
@@ -161,15 +213,35 @@ void TileRendering::Render() const
                                                                     &intersect_event,
                                                                     nullptr,
                                                                     &err_code));
-    CL_CHECK_STATUS(err_code);
-    unsigned int hit_counter{ 0 };
-    for (unsigned int i = 0; i != tile_description.TotalSamples(); ++i)
+
+    std::vector<unsigned char> uchar_raster(3 * tile_description.TotalPixels());
+    for (unsigned int i = 0; i != tile_description.TotalSamples(); i++)
     {
-        if (primitive_index[i] == 0)
+        if (primitive_index[i] != std::numeric_limits<cl_uint>::max())
         {
-            hit_counter++;
+            uchar_raster[3 * i] = 255;
+            uchar_raster[3 * i + 1] = 0;
+            uchar_raster[3 * i + 2] = 0;
         }
+        else
+        {
+            uchar_raster[3 * i] = 255;
+            uchar_raster[3 * i + 1] = 255;
+            uchar_raster[3 * i + 2] = 255;
+        }
+//        uchar_raster[3 * i] = static_cast<unsigned char>(std::abs(ray_direction_x[i]) * 255);
+//        uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::abs(ray_direction_y[i]) * 255);
+//        uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::abs(ray_direction_z[i]) * 255);
     }
+
+    // Write image, set flip vertical axis before
+    stbi_flip_vertically_on_write(1);
+    if (!stbi_write_png("DaiCazzo.png", tile_description.tile_width, tile_description.tile_height, 3,
+                        uchar_raster.data(), 0))
+    {
+        throw std::runtime_error("Error creating PNG image");
+    }
+    stbi_flip_vertically_on_write(0);
 }
 
 void TileRendering::Cleanup() noexcept
