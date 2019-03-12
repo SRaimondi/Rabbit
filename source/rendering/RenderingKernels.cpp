@@ -198,12 +198,15 @@ void RenderingKernels::SetRestartKernelArgs(const RenderingData& rendering_data,
                                  &rendering_data.d_pixels.filter_weight));
     CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
                                  &rendering_data.d_xorshift_state.state));
+    const cl_uint tile_width = tile_description.Width();
+    const cl_uint tile_height = tile_description.Height();
+    const cl_uint pixel_samples = tile_description.PixelSamples();
     CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(unsigned int),
-                                 &tile_description.tile_width));
+                                 &tile_width));
     CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(unsigned int),
-                                 &tile_description.tile_height));
+                                 &tile_height));
     CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(unsigned int),
-                                 &tile_description.pixel_samples));
+                                 &pixel_samples));
     CL_CHECK_CALL(clSetKernelArg(restart_sample_kernel, arg_index++, sizeof(cl_mem),
                                  &rendering_data.d_samples.samples_done));
 }

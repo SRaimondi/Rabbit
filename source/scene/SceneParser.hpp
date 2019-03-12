@@ -11,10 +11,8 @@
 // Sphere struct layout
 struct Sphere
 {
-    // Center
-    float cx, cy, cz;
-    // Radius
-    float radius;
+    // Center and radius
+    float cx, cy, cz, radius;
 
     constexpr Sphere(float cx, float cy, float cz, float r) noexcept
         : cx{ cx }, cy{ cy }, cz{ cz }, radius{ r }

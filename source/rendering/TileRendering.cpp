@@ -150,12 +150,6 @@ void TileRendering::Render() const
                 uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::abs(normal_y[i]) * 255);
                 uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::abs(normal_z[i]) * 255);
             }
-            else
-            {
-                uchar_raster[3 * i] = 0;
-                uchar_raster[3 * i + 1] = 0;
-                uchar_raster[3 * i + 2] = 0;
-            }
 //        uchar_raster[3 * i] = static_cast<unsigned char>(std::abs(ray_direction_x[i]) * 255);
 //        uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::abs(ray_direction_y[i]) * 255);
 //        uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::abs(ray_direction_z[i]) * 255);
@@ -163,8 +157,7 @@ void TileRendering::Render() const
 
         // Write image, set flip vertical axis before
         stbi_flip_vertically_on_write(1);
-        if (!stbi_write_png("test.png", tile_description.tile_width, tile_description.tile_height, 3,
-                            uchar_raster.data(), 0))
+        if (!stbi_write_png("test.png", tile_description.Width(), tile_description.Height(), 3, uchar_raster.data(), 0))
         {
             throw std::runtime_error("Error creating PNG image");
         }
