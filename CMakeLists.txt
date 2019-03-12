@@ -44,6 +44,7 @@ if (APPLE)
 endif(APPLE)
 
 if (NOT OpenCL_FOUND)
+    # TODO This is hardocoded to the CUDA folder
     target_include_directories(Rabbit PRIVATE $ENV{CUDA_PATH}/include)
     target_link_libraries(Rabbit PRIVATE $ENV{CUDA_PATH}/lib/x64/OpenCL.lib)
 else()
@@ -52,8 +53,6 @@ endif()
 
 # Specify flags for build
 IF (CMAKE_BUILD_TYPE MATCHES Debug)
-    TARGET_COMPILE_OPTIONS(Rabbit PRIVATE -march=native -Wall -Wextra)
-ELSEIF (CMAKE_BUILD_TYPE MATCHES Release)
-    TARGET_COMPILE_OPTIONS(Rabbit PRIVATE -march=native)
+    TARGET_COMPILE_OPTIONS(Rabbit PRIVATE -Wall -Wextra)
 ENDIF ()
 
