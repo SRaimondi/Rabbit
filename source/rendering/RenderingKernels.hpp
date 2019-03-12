@@ -41,17 +41,17 @@ public:
     // Launch the Initialise kernel
     void RunInitialise(cl_command_queue queue,
                        cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
-                       cl_event* kernel_event = nullptr);
+                       cl_event* kernel_event = nullptr) const;
 
     // Launch the Restart kernel
     void RunRestart(cl_command_queue queue,
                     cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
-                    cl_event* kernel_event = nullptr);
+                    cl_event* kernel_event = nullptr) const;
 
     // Launch the Intersect kernel
     void RunIntersect(cl_command_queue queue,
                       cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
-                      cl_event* kernel_event = nullptr);
+                      cl_event* kernel_event = nullptr) const;
 
 private:
     // Load kernel program source and build program

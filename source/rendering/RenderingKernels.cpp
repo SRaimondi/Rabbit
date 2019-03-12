@@ -52,7 +52,7 @@ RenderingKernels::~RenderingKernels() noexcept
 }
 
 void RenderingKernels::RunInitialise(cl_command_queue queue, cl_uint num_wait_events, const cl_event* wait_events,
-                                     cl_event* kernel_event)
+                                     cl_event* kernel_event) const
 {
     CL_CHECK_CALL(clEnqueueNDRangeKernel(queue,
                                          initialise_kernel,
@@ -66,7 +66,7 @@ void RenderingKernels::RunInitialise(cl_command_queue queue, cl_uint num_wait_ev
 }
 
 void RenderingKernels::RunRestart(cl_command_queue queue, cl_uint num_wait_events, const cl_event* wait_events,
-                                  cl_event* kernel_event)
+                                  cl_event* kernel_event) const
 {
     CL_CHECK_CALL(clEnqueueNDRangeKernel(queue,
                                          restart_sample_kernel,
@@ -80,7 +80,7 @@ void RenderingKernels::RunRestart(cl_command_queue queue, cl_uint num_wait_event
 }
 
 void RenderingKernels::RunIntersect(cl_command_queue queue, cl_uint num_wait_events, const cl_event* wait_events,
-                                    cl_event* kernel_event)
+                                    cl_event* kernel_event) const
 {
     CL_CHECK_CALL(clEnqueueNDRangeKernel(queue,
                                          intersect_kernel,

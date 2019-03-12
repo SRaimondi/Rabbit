@@ -41,6 +41,26 @@ TileRendering::~TileRendering() noexcept
     Cleanup();
 }
 
+void TileRendering::Render() const
+{
+    // Run Initialise kernel
+    cl_event initialise_event;
+    rendering_kernel.RunInitialise(command_queue, 0, nullptr, &initialise_event);
+
+    // Map memory to host and check what is inside
+    cl_int err_code{ CL_SUCCESS };
+    auto ray_depth = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
+                                                                  rendering_data.d_rays.depth,
+                                                                  CL_TRUE,
+                                                                  CL_MAP_READ,
+                                                                  0,
+                                                                  tile_description.TotalSamples() * sizeof(cl_uint),
+                                                                  1,
+                                                                  &initialise_event,
+                                                                  nullptr,
+                                                                  &err_code));
+}
+
 void TileRendering::Cleanup() noexcept
 {
     try

@@ -38,6 +38,11 @@ RenderingContext::~RenderingContext() noexcept
     Cleanup();
 }
 
+void RenderingContext::Render() const
+{
+    tile_rendering_context.Render();
+}
+
 void RenderingContext::Cleanup() noexcept
 {
     try

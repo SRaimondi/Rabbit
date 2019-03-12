@@ -23,6 +23,9 @@ public:
 
     ~RenderingContext() noexcept;
 
+    // Render image
+    void Render() const;
+
 private:
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;
