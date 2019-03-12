@@ -15,6 +15,15 @@
 #define ONE_OVER_2PI            0.15915494309f
 #define EPS                     0.0001f
 
+
+/*
+ * 3D vector struct
+ */
+typedef struct 
+{
+    float x, y, z;
+} Vector3;
+
 /*
  * Common utility functions
  */
@@ -50,20 +59,22 @@ inline bool SolveQuadratic(float a, float b, float c, float* t0, float* t1)
     return true;
 }
 
-inline void CreateLocalBase(float3 n, float3* s, float3* t)
+inline void CreateLocalBase(Vector3 n, Vector3* s, Vector3* t)
 {
     if (fabs(n.x) > fabs(n.y)) {
-        const float inv_norm = sqrt(n.x * n.x + n.z * n.z);
+        const float inv_norm = 1.f / sqrt(n.x * n.x + n.z * n.z);
         s->x = -n.z * inv_norm;
         s->y = 0.f;
         s->z = n.x * inv_norm;
     } else {
-        const float inv_norm = sqrt(n.y * n.y + n.z * n.z);
+        const float inv_norm = 1.f / sqrt(n.y * n.y + n.z * n.z);
         s->x = 0.f;
         s->y = n.z * inv_norm;
         s->z = -n.y * inv_norm;
     }
-    *t = cross(*s, n);
+    t->x = s->y * n.z - s->z * n.y;
+    t->y = s->z * n.x - s->x * n.z;
+    t->z = s->x * n.y - s->y * n.x;
 }
 
 /*
@@ -85,20 +96,20 @@ typedef struct
     const float inv_width, inv_height;
 } Camera;
 
-inline float3 GenerateRayDirection(__constant const Camera* camera,
+inline Vector3 GenerateRayDirection(__constant const Camera* camera,
                                    unsigned int px, unsigned int py,
                                    float sx, float sy)
 {
     const float vp_x = camera->left * (1.f - 2.f * (px + sx) * camera->inv_width);
     const float vp_y = camera->bottom * (1.f - 2.f * (py + sy) * camera->inv_height);
 
-    // Load local base
-    const float3 u = (float3)(camera->u_x, camera->u_y, camera->u_z);
-    const float3 v = (float3)(camera->v_x, camera->v_y, camera->v_z);
-    const float3 w = (float3)(camera->w_x, camera->w_y, camera->w_z);
-
     // Compute direction
-    return normalize(vp_x * u + vp_y * v - w);
+    const float dir_x = vp_x * camera->u_x + vp_y * camera->v_x - camera->w_x;
+    const float dir_y = vp_x * camera->u_y + vp_y * camera->v_y - camera->w_y;
+    const float dir_z = vp_x * camera->u_z + vp_y * camera->v_z - camera->w_z;
+    const float inv_norm = 1.f / sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
+
+    return (Vector3){ .x = dir_x * inv_norm, .y = dir_y * inv_norm, .z = dir_z * inv_norm };
 }
 
 /*
@@ -204,6 +215,17 @@ inline Intersection FillIntersection(const Sphere sphere,
 
     return isect;
 }
+
+/*
+ * Diffuse material description
+ */ 
+typedef struct
+{
+    // Reflectance
+    float rho_r, rho_g, rho_b;
+    // Emission
+    float emission_r, emission_g, emission_b;
+} DiffuseMaterial;
 
 /*
  * Random number generation
@@ -354,7 +376,7 @@ __kernel void RestartSample(__constant const Camera* camera,
                 ray_origin_z[tid] = camera->eye_z;
 
                 // Generate direction and store
-                const float3 ray_direction = GenerateRayDirection(camera, px, py, sx, sy);
+                const Vector3 ray_direction = GenerateRayDirection(camera, px, py, sx, sy);
                 ray_direction_x[tid] = ray_direction.x;
                 ray_direction_y[tid] = ray_direction.y;
                 ray_direction_z[tid] = ray_direction.z;
