@@ -213,7 +213,7 @@ void RenderingKernels::SetIntersectKernelArgs(const RenderingData& rendering_dat
 {
     cl_uint arg_index{ 0 };
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &scene.d_spheres));
-    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(unsigned int), &scene.num_spheres));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_uint), &scene.num_spheres));
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_x));
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_y));
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_z));

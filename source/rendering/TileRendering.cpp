@@ -114,38 +114,62 @@ void TileRendering::Render() const
 
     // Map ray origin to debug
     auto ray_direction_x = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                               rendering_data.d_rays.direction_x,
-                                                               CL_TRUE,
-                                                               CL_MAP_READ,
-                                                               0,
-                                                               tile_description.TotalSamples() * sizeof(cl_float),
-                                                               1,
-                                                               &restart_event,
-                                                               nullptr,
-                                                               &err_code));
+                                                                  rendering_data.d_rays.direction_x,
+                                                                  CL_TRUE,
+                                                                  CL_MAP_READ,
+                                                                  0,
+                                                                  tile_description.TotalSamples() * sizeof(cl_float),
+                                                                  1,
+                                                                  &restart_event,
+                                                                  nullptr,
+                                                                  &err_code));
     CL_CHECK_STATUS(err_code);
     auto ray_direction_y = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                               rendering_data.d_rays.direction_y,
-                                                               CL_TRUE,
-                                                               CL_MAP_READ,
-                                                               0,
-                                                               tile_description.TotalSamples() * sizeof(cl_float),
-                                                               1,
-                                                               &restart_event,
-                                                               nullptr,
-                                                               &err_code));
+                                                                  rendering_data.d_rays.direction_y,
+                                                                  CL_TRUE,
+                                                                  CL_MAP_READ,
+                                                                  0,
+                                                                  tile_description.TotalSamples() * sizeof(cl_float),
+                                                                  1,
+                                                                  &restart_event,
+                                                                  nullptr,
+                                                                  &err_code));
     CL_CHECK_STATUS(err_code);
     auto ray_direction_z = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                               rendering_data.d_rays.direction_z,
-                                                               CL_TRUE,
-                                                               CL_MAP_READ,
-                                                               0,
-                                                               tile_description.TotalSamples() * sizeof(cl_float),
-                                                               1,
-                                                               &restart_event,
-                                                               nullptr,
-                                                               &err_code));
+                                                                  rendering_data.d_rays.direction_z,
+                                                                  CL_TRUE,
+                                                                  CL_MAP_READ,
+                                                                  0,
+                                                                  tile_description.TotalSamples() * sizeof(cl_float),
+                                                                  1,
+                                                                  &restart_event,
+                                                                  nullptr,
+                                                                  &err_code));
     CL_CHECK_STATUS(err_code);
+
+    // Run Intersect kernel
+    cl_event intersect_event;
+    rendering_kernel.RunIntersect(command_queue, 1, &restart_event, &intersect_event);
+
+    auto primitive_index = static_cast<cl_uint*>(clEnqueueMapBuffer(command_queue,
+                                                                    rendering_data.d_intersections.primitive_index,
+                                                                    CL_TRUE,
+                                                                    CL_MAP_READ,
+                                                                    0,
+                                                                    tile_description.TotalSamples() * sizeof(cl_uint),
+                                                                    1,
+                                                                    &intersect_event,
+                                                                    nullptr,
+                                                                    &err_code));
+    CL_CHECK_STATUS(err_code);
+    unsigned int hit_counter{ 0 };
+    for (unsigned int i = 0; i != tile_description.TotalSamples(); ++i)
+    {
+        if (primitive_index[i] == 0)
+        {
+            hit_counter++;
+        }
+    }
 }
 
 void TileRendering::Cleanup() noexcept

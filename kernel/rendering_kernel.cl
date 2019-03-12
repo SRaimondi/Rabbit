@@ -380,7 +380,8 @@ __kernel void Intersect(// Spheres in the scene
                         // Intersection information
                         __global float* hit_point_x, __global float* hit_point_y, __global float* hit_point_z,
                         __global float* normal_x, __global float* normal_y, __global float* normal_z,
-                        __global float* uv_s, __global float* uv_t, __global unsigned int* primitive_index,
+                        __global float* uv_s, __global float* uv_t, 
+                        __global unsigned int* primitive_index,
                         // Total number of samples
                         unsigned int total_samples)
 {
