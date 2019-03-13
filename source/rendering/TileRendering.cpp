@@ -49,7 +49,7 @@ TileRendering::~TileRendering() noexcept
 void TileRendering::Render() const
 {
     // Synchronisation events
-    cl_event initialise_event, restart_event, intersect_event;
+    cl_event initialise_event, restart_event, intersect_event, sample_event;
     // Profiling variables
     cl_ulong start_time, end_time;
 
@@ -95,10 +95,19 @@ void TileRendering::Render() const
                                               sizeof(cl_ulong), &end_time, nullptr));
         std::cout << "Intersect kernel time: " << end_time - start_time << " ns\n";
 
+        // Sample the BRDF
+        rendering_kernel.RunSampleBRDF(command_queue, 1, &intersect_event, &sample_event);
+        CL_CHECK_CALL(clWaitForEvents(1, &sample_event));
+        CL_CHECK_CALL(clGetEventProfilingInfo(sample_event, CL_PROFILING_COMMAND_START,
+                                              sizeof(cl_ulong), &start_time, nullptr));
+        CL_CHECK_CALL(clGetEventProfilingInfo(sample_event, CL_PROFILING_COMMAND_END,
+                                              sizeof(cl_ulong), &end_time, nullptr));
+        std::cout << "Sample BRDF kernel time: " << end_time - start_time << " ns\n";
+
         // DEBUG
         cl_int err_code{ CL_SUCCESS };
         auto normal_x = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                               rendering_data.d_intersections.normal_x,
+                                                               rendering_data.d_rays.direction_x,
                                                                CL_MAP_READ,
                                                                CL_TRUE,
                                                                0,
@@ -109,7 +118,7 @@ void TileRendering::Render() const
                                                                &err_code));
         CL_CHECK_STATUS(err_code);
         auto normal_y = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                               rendering_data.d_intersections.normal_y,
+                                                               rendering_data.d_rays.direction_y,
                                                                CL_MAP_READ,
                                                                CL_TRUE,
                                                                0,
@@ -120,7 +129,7 @@ void TileRendering::Render() const
                                                                &err_code));
         CL_CHECK_STATUS(err_code);
         auto normal_z = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                               rendering_data.d_intersections.normal_z,
+                                                               rendering_data.d_rays.direction_z,
                                                                CL_MAP_READ,
                                                                CL_TRUE,
                                                                0,

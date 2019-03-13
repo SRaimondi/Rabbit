@@ -53,6 +53,11 @@ public:
                       cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
                       cl_event* kernel_event = nullptr) const;
 
+    // Launch the BRDF sample kernel
+    void RunSampleBRDF(cl_command_queue queue,
+                       cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
+                       cl_event* kernel_event = nullptr) const;
+
 private:
     // Load kernel program source and build program
     cl_program BuildProgram(cl_context context, cl_device_id device, const std::string& kernel_filename) const;
@@ -75,6 +80,9 @@ private:
     void SetIntersectKernelArgs(const RenderingData& rendering_data,
                                 const TileDescription& tile_description, const ::CL::Scene& scene);
 
+    // Set arguments for SampleBRDF kernel
+    void SetSampleBRDFKernelArgs(const RenderingData& rendering_data, const TileDescription& tile_description);
+
     // Get preferred wg multiple size and max wg size for a kernel
     std::pair<size_t, size_t> GetWGInfo(cl_kernel kernel, cl_device_id device) const;
 
@@ -90,6 +98,9 @@ private:
     // Setup launch config for Intersect kernel
     void SetupIntersectLaunchConfig(const TileDescription& tile_description, cl_device_id device);
 
+    // Set launch config for SampleBRDF kernel
+    void SetupSampleBRDFLaunchConfig(const TileDescription& tile_description, cl_device_id device);
+
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;
 
@@ -104,6 +115,10 @@ private:
     // Intersect samples ray with spheres
     cl_kernel intersect_kernel;
     KernelLaunchSize intersect_launch_config;
+
+    // Sample BRDF kernel
+    cl_kernel sample_brdf_kernel;
+    KernelLaunchSize sample_brdf_launch_config;
 
     // Update radiance kernel
     // cl_kernel update_radiance_kernel;

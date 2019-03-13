@@ -491,7 +491,7 @@ __kernel void Intersect(// Spheres in the scene
                         // Ray origin and direction
                         __global const float* ray_origin_x, __global const float* ray_origin_y, __global const float* ray_origin_z,
                         __global const float* ray_direction_x, __global const float* ray_direction_y, __global const float* ray_direction_z,
-                        __global const unsigned int* ray_depth,
+                        __global unsigned int* ray_depth,
                         // Intersection information
                         __global float* hit_point_x, __global float* hit_point_y, __global float* hit_point_z,
                         __global float* normal_x, __global float* normal_y, __global float* normal_z,
@@ -544,6 +544,60 @@ __kernel void Intersect(// Spheres in the scene
             // Save index of primitive hit
             primitive_index[tid] = closest_sphere_index;
         }
+        else
+        {
+            // Ray did not intersect, set for restart
+            ray_depth[tid] = RAY_TO_RESTART_DEPTH;
+        }
+    }
+}
+
+/*
+ * This kernel checks if the ray is not done abd sets up a new ray forthe next bounce
+ */
+__kernel void SampleBRDF(// Rays description
+                         __global float* ray_origin_x, __global float* ray_origin_y, __global float* ray_origin_z,
+                         __global float* ray_direction_x, __global float* ray_direction_y, __global float* ray_direction_z, 
+                         __global unsigned int* ray_depth,
+                         // Intersection information
+                         __global const float* hit_point_x, __global const float* hit_point_y, __global const float* hit_point_z,
+                         __global const float* normal_x, __global const float* normal_y, __global const float* normal_z,
+                         // Random number generator state
+                         __global unsigned int* xorshift_state,
+                         // Total number of samples
+                         unsigned int total_samples)
+{
+    const unsigned int tid = get_global_id(0);
+    if (tid < total_samples && ray_depth[tid] != RAY_TO_RESTART_DEPTH && ray_depth[tid] != RAY_DONE_DEPTH)
+    {
+        // Create local base around normal
+        const Vector3 n = NewVector3(normal_x[tid], normal_y[tid], normal_z[tid]);
+        Vector3 s, t;
+        CreateLocalBase(n, &s, &t);
+
+        // Sample random cosine-weighted direction
+        const float u0 = GenerateFloat(&xorshift_state[tid]);
+        const float u1 = GenerateFloat(&xorshift_state[tid]);
+        const Vector3 wi = CosineSampleHemisphere(u0, u1);
+
+        // Transform direction to world space
+        Vector3 wi_world;
+        wi_world.x = wi.x * s.x + wi.y * n.x + wi.z * t.x;
+        wi_world.y = wi.x * s.y + wi.y * n.y + wi.z * t.y;
+        wi_world.z = wi.x * s.z + wi.y * n.z + wi.z * t.z;
+
+        // Set new ray start
+        ray_origin_x[tid] = hit_point_x[tid] + EPS * wi_world.x;
+        ray_origin_y[tid] = hit_point_y[tid] + EPS * wi_world.y;
+        ray_origin_z[tid] = hit_point_z[tid] + EPS * wi_world.z;
+
+        // Set new ray direction
+        ray_direction_x[tid] = wi_world.x;
+        ray_direction_y[tid] = wi_world.y;
+        ray_direction_z[tid] = wi_world.z;
+
+        // Increase depth
+        ray_depth[tid]++;
     }
 }
 
@@ -561,14 +615,6 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                              __global const float* ray_direction_x, __global const float* ray_direction_y, __global const float* ray_direction_z)
 {
 
-}
-
-/*
- *
- */
-__kernel void SampleBRDF()
-{
-    return;
 }
 
 /*

@@ -18,7 +18,8 @@ namespace CL
 RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, const std::string& kernel_filename,
                                    const RenderingData& rendering_data,
                                    const TileDescription& tile_description, const ::CL::Scene& scene)
-    : initialise_kernel{ nullptr }, restart_sample_kernel{ nullptr }, intersect_kernel{ nullptr } /*,
+    : initialise_kernel{ nullptr }, restart_sample_kernel{ nullptr }, intersect_kernel{ nullptr },
+      sample_brdf_kernel{ nullptr } /*
       update_radiance_kernel{ nullptr }, deposit_samples_kernel{ nullptr }*/
 {
     try
@@ -93,6 +94,20 @@ void RenderingKernels::RunIntersect(cl_command_queue queue, cl_uint num_wait_eve
                                          kernel_event));
 }
 
+void RenderingKernels::RunSampleBRDF(cl_command_queue queue, cl_uint num_wait_events, cl_event const* wait_events,
+                                     cl_event* kernel_event) const
+{
+    CL_CHECK_CALL(clEnqueueNDRangeKernel(queue,
+                                         sample_brdf_kernel,
+                                         1,
+                                         &sample_brdf_launch_config.offset,
+                                         &sample_brdf_launch_config.global_size,
+                                         &sample_brdf_launch_config.local_size,
+                                         num_wait_events,
+                                         wait_events,
+                                         kernel_event));
+}
+
 cl_program RenderingKernels::BuildProgram(cl_context context, cl_device_id device,
                                           const std::string& kernel_filename) const
 {
@@ -135,6 +150,8 @@ void RenderingKernels::SetupKernels(cl_program kernel_program)
     CL_CHECK_STATUS(err_code);
     intersect_kernel = clCreateKernel(kernel_program, "Intersect", &err_code);
     CL_CHECK_STATUS(err_code);
+    sample_brdf_kernel = clCreateKernel(kernel_program, "SampleBRDF", &err_code);
+    CL_CHECK_STATUS(err_code);
 //    update_radiance_kernel = clCreateKernel(kernel_program, "UpdateRadiance", &err_code);
 //    CL_CHECK_STATUS(err_code);
 //    deposit_samples_kernel = clCreateKernel(kernel_program, "DepositSamples", &err_code);
@@ -147,6 +164,7 @@ void RenderingKernels::SetKernelArgs(const RenderingData& rendering_data,
     SetInitialiseKernelArgs(rendering_data, tile_description);
     SetRestartKernelArgs(rendering_data, tile_description, scene);
     SetIntersectKernelArgs(rendering_data, tile_description, scene);
+    SetSampleBRDFKernelArgs(rendering_data, tile_description);
 }
 
 void RenderingKernels::SetInitialiseKernelArgs(const RenderingData& rendering_data,
@@ -244,6 +262,35 @@ void RenderingKernels::SetIntersectKernelArgs(const RenderingData& rendering_dat
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_uint), &total_samples));
 }
 
+void RenderingKernels::SetSampleBRDFKernelArgs(const RenderingData& rendering_data,
+                                               const TileDescription& tile_description)
+{
+    cl_uint arg_index{ 0 };
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_x));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_y));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.origin_z));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.direction_x));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.direction_y));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.direction_z));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_rays.depth));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.hit_point_x));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.hit_point_y));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.hit_point_z));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.normal_x));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.normal_y));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_intersections.normal_z));
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_mem),
+                                 &rendering_data.d_xorshift_state.state));
+    const cl_uint total_samples = tile_description.TotalSamples();
+    CL_CHECK_CALL(clSetKernelArg(sample_brdf_kernel, arg_index++, sizeof(cl_uint), &total_samples));
+}
+
 std::pair<size_t, size_t> RenderingKernels::GetWGInfo(cl_kernel kernel, cl_device_id device) const
 {
     // Get the preferred multiple size multiple for the device
@@ -264,6 +311,7 @@ void RenderingKernels::SetupLaunchConfig(const TileDescription& tile_description
     SetupInitialiseLaunchConfig(tile_description, device);
     SetupRestartLaunchConfig(tile_description, device);
     SetupIntersectLaunchConfig(tile_description, device);
+    SetupSampleBRDFLaunchConfig(tile_description, device);
 }
 
 void RenderingKernels::SetupInitialiseLaunchConfig(const TileDescription& tile_description, cl_device_id device)
@@ -296,6 +344,16 @@ void RenderingKernels::SetupIntersectLaunchConfig(const TileDescription& tile_de
                                                   intersect_launch_config.local_size);
 }
 
+void RenderingKernels::SetupSampleBRDFLaunchConfig(const TileDescription& tile_description, cl_device_id device)
+{
+    // Get the preferred sizes for the kernel
+    const auto wg_info = GetWGInfo(sample_brdf_kernel, device);
+    // Compute size for the kernel
+    sample_brdf_launch_config.local_size = RoundDown(wg_info.second, wg_info.first);
+    sample_brdf_launch_config.global_size = RoundUp(static_cast<size_t>(tile_description.TotalSamples()),
+                                                    sample_brdf_launch_config.local_size);
+}
+
 void RenderingKernels::Cleanup() noexcept
 {
     try
@@ -311,6 +369,10 @@ void RenderingKernels::Cleanup() noexcept
         if (intersect_kernel != nullptr)
         {
             CL_CHECK_CALL(clReleaseKernel(intersect_kernel));
+        }
+        if (sample_brdf_kernel != nullptr)
+        {
+            CL_CHECK_CALL(clReleaseKernel(sample_brdf_kernel));
         }
     }
     catch (const std::exception& ex)

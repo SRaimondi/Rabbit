@@ -20,7 +20,7 @@ int main(int argc, const char** argv)
         const SceneDescription scene_description{ SceneParser::ReadSceneDescription(argv[1]) };
 
         // Create camera
-        const Rendering::Camera camera{ Vector3{ 4.f, 10.f, 15.f }, Vector3{ 0.f }, Vector3{ 0.f, 1.f, 0.f },
+        const Rendering::Camera camera{ Vector3{ 4.f, 5.f, 15.f }, Vector3{ 0.f }, Vector3{ 0.f, 1.f, 0.f },
                                         45.f, scene_description.image_width, scene_description.image_height };
 
         cl_uint num_platforms;
