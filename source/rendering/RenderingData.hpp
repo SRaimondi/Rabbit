@@ -68,6 +68,11 @@ public:
     cl_mem uv_s;
     cl_mem uv_t;
 
+    // Outgoing light direction at intersection
+    cl_mem wo_x;
+    cl_mem wo_y;
+    cl_mem wo_z;
+
     // Index of the intersected primitive (cl_uint)
     cl_mem primitive_index;
 

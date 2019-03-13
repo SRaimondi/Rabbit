@@ -84,6 +84,7 @@ Intersections::Intersections(cl_context context, unsigned int num_intersections)
       hit_point_x{ nullptr }, hit_point_y{ nullptr }, hit_point_z{ nullptr },
       normal_x{ nullptr }, normal_y{ nullptr }, normal_z{ nullptr },
       uv_s{ nullptr }, uv_t{ nullptr },
+      wo_x{ nullptr }, wo_y{ nullptr }, wo_z{ nullptr },
       primitive_index{ nullptr }
 {
     cl_int err_code{ CL_SUCCESS };
@@ -108,6 +109,13 @@ Intersections::Intersections(cl_context context, unsigned int num_intersections)
         uv_s = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, nullptr, &err_code);
         CL_CHECK_STATUS(err_code);
         uv_t = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, nullptr, &err_code);
+        CL_CHECK_STATUS(err_code);
+
+        wo_x = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, nullptr, &err_code);
+        CL_CHECK_STATUS(err_code);
+        wo_y = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, nullptr, &err_code);
+        CL_CHECK_STATUS(err_code);
+        wo_z = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, nullptr, &err_code);
         CL_CHECK_STATUS(err_code);
 
         primitive_index = clCreateBuffer(context, CL_MEM_READ_WRITE, num_intersections * sizeof(cl_uint), nullptr,
@@ -139,6 +147,9 @@ void Intersections::Cleanup() noexcept
         RELEASE(normal_z)
         RELEASE(uv_s)
         RELEASE(uv_t)
+        RELEASE(wo_x)
+        RELEASE(wo_y)
+        RELEASE(wo_z)
         RELEASE(primitive_index)
     }
     catch (const std::exception& ex)

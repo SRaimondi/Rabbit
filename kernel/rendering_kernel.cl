@@ -496,6 +496,7 @@ __kernel void Intersect(// Spheres in the scene
                         __global float* hit_point_x, __global float* hit_point_y, __global float* hit_point_z,
                         __global float* normal_x, __global float* normal_y, __global float* normal_z,
                         __global float* uv_s, __global float* uv_t, 
+                        __global float* wo_x, __global float* wo_y, __global float* wo_z,
                         __global unsigned int* primitive_index,
                         // Total number of samples
                         unsigned int total_samples)
@@ -536,6 +537,9 @@ __kernel void Intersect(// Spheres in the scene
             normal_z[tid] = intersection.normal_z;
             uv_s[tid] = intersection.uv_s;
             uv_t[tid] = intersection.uv_t;
+            wo_x[tid] = -dx;
+            wo_y[tid] = -dy;
+            wo_z[tid] = -dz;
 
             // Save index of primitive hit
             primitive_index[tid] = closest_sphere_index;
@@ -546,7 +550,23 @@ __kernel void Intersect(// Spheres in the scene
 /*
  * Update sample radiance
  */
-__kernel void UpdateRadiance()
+__kernel void UpdateRadiance(// Current radiance along the ray and masking term
+                             __global float* Li_r, __global float* Li_g, __global float* Li_b,
+                             __global float* beta_r, __global float* beta_g, __global float* beta_b,
+                             // Intersection information
+                             __global const float* normal_x, __global const float* normal_y, __global const float* normal_z,
+                             __global const float* uv_s, __global const float* uv_t,
+                             __global const unsigned int* primitive_index,
+                             // Current ray direction, assumed to be normalized
+                             __global const float* ray_direction_x, __global const float* ray_direction_y, __global const float* ray_direction_z)
+{
+
+}
+
+/*
+ *
+ */
+__kernel void SampleBRDF()
 {
     return;
 }

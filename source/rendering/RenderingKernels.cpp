@@ -235,6 +235,9 @@ void RenderingKernels::SetIntersectKernelArgs(const RenderingData& rendering_dat
                                  &rendering_data.d_intersections.normal_z));
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_intersections.uv_s));
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_intersections.uv_t));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_intersections.wo_x));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_intersections.wo_y));
+    CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem), &rendering_data.d_intersections.wo_z));
     CL_CHECK_CALL(clSetKernelArg(intersect_kernel, arg_index++, sizeof(cl_mem),
                                  &rendering_data.d_intersections.primitive_index));
     const cl_uint total_samples = tile_description.TotalSamples();
