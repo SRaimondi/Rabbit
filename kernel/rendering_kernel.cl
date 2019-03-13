@@ -188,6 +188,11 @@ typedef struct
     float emission_r, emission_g, emission_b;
 } DiffuseMaterial;
 
+inline bool IsBlack(float r, float g, float b)
+{
+    return r == 0.f && g == 0.f && b == 0.f;
+}
+
 typedef struct
 {
     // Hit point
