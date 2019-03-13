@@ -407,7 +407,8 @@ __kernel void RestartSample(__constant const Camera* camera,
                 else 
                 {
                     // Check if we can go up
-                    if (current_pixel_y + tile_height < camera->image_height) {
+                    if (current_pixel_y + tile_height < camera->image_height)
+                    {
                         // We went up, update pixel y and x
                         px = tile_x;
                         py = current_pixel_y + tile_height;
