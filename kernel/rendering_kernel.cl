@@ -99,7 +99,7 @@ inline Vector2 ConcentricSampleDisk(float u0, float u1)
     float u1_offset = 2.f * u1 - 1.f;
 
     // Handle degenerate center
-    if (u0_offset == 0.f && u1_offset == 0.f)
+    if (fabs(u0_offset) < EPS && fabs(u1_offset) < EPS)
     {
         return NewVector2(0.f, 0.f);
     }
