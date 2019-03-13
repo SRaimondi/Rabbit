@@ -581,10 +581,9 @@ __kernel void SampleBRDF(// Rays description
         const Vector3 wi = CosineSampleHemisphere(u0, u1);
 
         // Transform direction to world space
-        Vector3 wi_world;
-        wi_world.x = wi.x * s.x + wi.y * n.x + wi.z * t.x;
-        wi_world.y = wi.x * s.y + wi.y * n.y + wi.z * t.y;
-        wi_world.z = wi.x * s.z + wi.y * n.z + wi.z * t.z;
+        const Vector3 wi_world = NewVector3(wi.x * s.x + wi.y * n.x + wi.z * t.x,
+                                            wi.x * s.y + wi.y * n.y + wi.z * t.y,
+                                            wi.x * s.z + wi.y * n.z + wi.z * t.z);
 
         // Set new ray start
         ray_origin_x[tid] = hit_point_x[tid] + EPS * wi_world.x;
