@@ -19,8 +19,8 @@ RenderingKernels::RenderingKernels(cl_context context, cl_device_id device, cons
                                    const RenderingData& rendering_data,
                                    const TileDescription& tile_description, const ::CL::Scene& scene)
     : initialise_kernel{ nullptr }, restart_sample_kernel{ nullptr }, intersect_kernel{ nullptr },
-      sample_brdf_kernel{ nullptr } /*
-      update_radiance_kernel{ nullptr }, deposit_samples_kernel{ nullptr }*/
+      sample_brdf_kernel{ nullptr }, update_radiance_kernel{ nullptr }, deposit_samples_kernel{ nullptr },
+      final_image_kernel{ nullptr }
 {
     try
     {
@@ -508,6 +508,14 @@ void RenderingKernels::Cleanup() noexcept
         if (sample_brdf_kernel != nullptr)
         {
             CL_CHECK_CALL(clReleaseKernel(sample_brdf_kernel));
+        }
+        if (update_radiance_kernel != nullptr)
+        {
+            CL_CHECK_CALL(clReleaseKernel(update_radiance_kernel));
+        }
+        if (deposit_samples_kernel != nullptr)
+        {
+            CL_CHECK_CALL(clReleaseKernel(deposit_samples_kernel));
         }
     }
     catch (const std::exception& ex)

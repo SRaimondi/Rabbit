@@ -126,7 +126,7 @@ int main(int argc, const char** argv)
         const CL::Scene scene{ context, scene_description, camera };
         Rendering::CL::RenderingContext rendering_context{ context, selected_device, scene_description, scene };
 
-        rendering_context.Render();
+        rendering_context.Render("render.png");
 
         // Cleanup
         clReleaseContext(context);

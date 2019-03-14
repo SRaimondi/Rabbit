@@ -17,6 +17,7 @@ namespace CL
 RenderingContext::RenderingContext(cl_context context, cl_device_id device,
                                    const SceneDescription& scene_description, const ::CL::Scene& scene)
     : target_context{ context }, target_device{ device },
+      output_image_width{ scene_description.image_width }, output_image_height{ scene_description.image_height },
       tile_rendering_context{ context, device, CL_QUEUE_PROFILING_ENABLE, scene_description, scene }
 {
     try
@@ -38,9 +39,13 @@ RenderingContext::~RenderingContext() noexcept
     Cleanup();
 }
 
-void RenderingContext::Render() const
+void RenderingContext::Render(const std::string& filename) const
 {
+    // Request tile renderer to render image
     tile_rendering_context.Render();
+
+    // Create final image after render process
+    CreateImage(filename);
 }
 
 void RenderingContext::Cleanup() noexcept
@@ -55,6 +60,11 @@ void RenderingContext::Cleanup() noexcept
         // TODO operator<< could throw
         std::cerr << ex.what() << std::endl;
     }
+}
+
+void RenderingContext::CreateImage(const std::string& filename) const
+{
+
 }
 
 } // CL namespace

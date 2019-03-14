@@ -135,6 +135,10 @@ private:
     // Deposit the sample comping radiance to the pixel it belongs to
     cl_kernel deposit_samples_kernel;
     KernelLaunchSize deposit_samples_launch_config;
+
+    // Produce the final image by dividing the accumulated value by the weight
+    cl_kernel final_image_kernel;
+    KernelLaunchSize final_image_launch_config;
 };
 
 } // CL namespace

@@ -23,8 +23,7 @@ TileRendering::TileRendering(cl_context context, cl_device_id device, cl_command
                              const SceneDescription& scene_description, const ::CL::Scene& scene)
     : command_queue{ nullptr },
       tile_description{ scene_description.tile_width, scene_description.tile_height, scene_description.pixel_samples },
-      rendering_data{ context,
-                      scene_description.image_height * scene_description.image_width,
+      rendering_data{ context, scene_description.image_width * scene_description.image_height,
                       tile_description.TotalSamples() },
       rendering_kernel{ context, device, "./kernel/rendering_kernel.cl", rendering_data, tile_description, scene }
 {
@@ -52,8 +51,8 @@ TileRendering::~TileRendering() noexcept
 void TileRendering::Render() const
 {
     // Synchronisation events
-    cl_event initialise_event, restart_event, intersect_event, sample_event,
-        update_radiance_event, deposit_samples_event;
+    cl_event initialise_event, restart_event, intersect_event,
+        sample_event, update_radiance_event, deposit_samples_event;
     // Profiling variables
     cl_ulong start_time, end_time;
 
@@ -62,18 +61,21 @@ void TileRendering::Render() const
 
     // Run Initialise kernel
     rendering_kernel.RunInitialise(command_queue, 0, nullptr, &initialise_event);
-//    CL_CHECK_CALL(clWaitForEvents(1, &initialise_event));
-//    CL_CHECK_CALL(clGetEventProfilingInfo(initialise_event, CL_PROFILING_COMMAND_START,
-//                                          sizeof(cl_ulong), &start_time, nullptr));
-//    CL_CHECK_CALL(clGetEventProfilingInfo(initialise_event, CL_PROFILING_COMMAND_END,
-//                                          sizeof(cl_ulong), &end_time, nullptr));
-//    std::cout << "Initialise kernel time: " << end_time - start_time << " ns\n";
+    bool first_restart{ true };
 
     cl_uint samples_done{ 0 };
     while (true)
     {
         // Restart the samples
-        rendering_kernel.RunRestart(command_queue, 1, &initialise_event, &restart_event);
+        if (first_restart)
+        {
+            rendering_kernel.RunRestart(command_queue, 1, &initialise_event, &restart_event);
+            first_restart = false;
+        }
+        else
+        {
+            rendering_kernel.RunRestart(command_queue, 1, &deposit_samples_event, &restart_event);
+        }
 
         // Copy to host the number of samples that are done
         CL_CHECK_CALL(clEnqueueReadBuffer(command_queue,
@@ -87,52 +89,20 @@ void TileRendering::Render() const
             break;
         }
 
-//        CL_CHECK_CALL(clWaitForEvents(1, &restart_event));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(restart_event, CL_PROFILING_COMMAND_START,
-//                                              sizeof(cl_ulong), &start_time, nullptr));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(restart_event, CL_PROFILING_COMMAND_END,
-//                                              sizeof(cl_ulong), &end_time, nullptr));
-//        std::cout << "Restart kernel time: " << end_time - start_time << " ns\n";
-
         // Intersect the rays
         rendering_kernel.RunIntersect(command_queue, 1, &restart_event, &intersect_event);
-//        CL_CHECK_CALL(clWaitForEvents(1, &intersect_event));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(intersect_event, CL_PROFILING_COMMAND_START,
-//                                              sizeof(cl_ulong), &start_time, nullptr));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(intersect_event, CL_PROFILING_COMMAND_END,
-//                                              sizeof(cl_ulong), &end_time, nullptr));
-//        std::cout << "Intersect kernel time: " << end_time - start_time << " ns\n";
 
         // Sample the BRDF
         rendering_kernel.RunSampleBRDF(command_queue, 1, &intersect_event, &sample_event);
-//        CL_CHECK_CALL(clWaitForEvents(1, &sample_event));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(sample_event, CL_PROFILING_COMMAND_START,
-//                                              sizeof(cl_ulong), &start_time, nullptr));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(sample_event, CL_PROFILING_COMMAND_END,
-//                                              sizeof(cl_ulong), &end_time, nullptr));
-//        std::cout << "Sample BRDF kernel time: " << end_time - start_time << " ns\n";
 
         // Update radiance
         rendering_kernel.RunUpdateRadiance(command_queue, 1, &sample_event, &update_radiance_event);
-//        CL_CHECK_CALL(clWaitForEvents(1, &update_radiance_event));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(update_radiance_event, CL_PROFILING_COMMAND_START,
-//                                              sizeof(cl_ulong), &start_time, nullptr));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(update_radiance_event, CL_PROFILING_COMMAND_END,
-//                                              sizeof(cl_ulong), &end_time, nullptr));
-//        std::cout << "Update Radiance kernel time: " << end_time - start_time << " ns\n";
 
         // Deposit samples
         rendering_kernel.RunDepositSamples(command_queue, 1, &update_radiance_event, &deposit_samples_event);
-//        CL_CHECK_CALL(clWaitForEvents(1, &deposit_samples_event));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(deposit_samples_event, CL_PROFILING_COMMAND_START,
-//                                              sizeof(cl_ulong), &start_time, nullptr));
-//        CL_CHECK_CALL(clGetEventProfilingInfo(deposit_samples_event, CL_PROFILING_COMMAND_END,
-//                                              sizeof(cl_ulong), &end_time, nullptr));
-//        std::cout << "Deposit sample kernel time: " << end_time - start_time << " ns\n";
-
     }
 
-    // DEBUG
+    // Now that the rendering is done, we can map the memory
     cl_int err_code{ CL_SUCCESS };
     auto pixel_r = static_cast<float*>(clEnqueueMapBuffer(command_queue,
                                                           rendering_data.d_pixels.pixel_r,
@@ -180,7 +150,7 @@ void TileRendering::Render() const
                                                                 &err_code));
     CL_CHECK_STATUS(err_code);
 
-    std::vector<unsigned char> uchar_raster(3 * 1024* 1024, 0);
+    std::vector<unsigned char> uchar_raster(3 * 1024 * 1024, 0);
     for (unsigned int i = 0; i != uchar_raster.size() / 3; i++)
     {
         uchar_raster[3 * i] = static_cast<unsigned char>(pixel_r[i] / filter_weight[i] * 255);
