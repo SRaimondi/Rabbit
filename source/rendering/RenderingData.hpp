@@ -6,7 +6,9 @@
 #define RABBIT_RENDERINGDATA_HPP
 
 #ifdef __APPLE__
+
 #include <OpenCL/cl.h>
+
 #else
 #include <CL/cl.h>
 #endif
@@ -172,7 +174,7 @@ struct RenderingData
     // XOrShift state for random number generation
     XOrShift d_xorshift_state;
 
-    RenderingData(cl_context context, unsigned int num_pixels, unsigned int total_tile_samples);
+    RenderingData(cl_context context, unsigned int total_film_pixels, unsigned int total_tile_samples);
 };
 
 } // CL namespace

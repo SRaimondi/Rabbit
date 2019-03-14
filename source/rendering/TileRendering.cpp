@@ -22,7 +22,9 @@ TileRendering::TileRendering(cl_context context, cl_device_id device, cl_command
                              const SceneDescription& scene_description, const ::CL::Scene& scene)
     : command_queue{ nullptr },
       tile_description{ scene_description.tile_width, scene_description.tile_height, scene_description.pixel_samples },
-      rendering_data{ context, tile_description.TotalPixels(), tile_description.TotalSamples() },
+      rendering_data{ context,
+                      scene_description.image_height * scene_description.image_width,
+                      tile_description.TotalSamples() },
       rendering_kernel{ context, device, "./kernel/rendering_kernel.cl", rendering_data, tile_description, scene }
 {
     cl_int err_code{ CL_SUCCESS };

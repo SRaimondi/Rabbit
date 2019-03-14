@@ -322,11 +322,11 @@ void XOrShift::Cleanup() noexcept
     }
 }
 
-RenderingData::RenderingData(cl_context context, unsigned int num_pixels, unsigned int total_tile_samples)
+RenderingData::RenderingData(cl_context context, unsigned int total_film_pixels, unsigned int total_tile_samples)
     : d_rays{ context, total_tile_samples },
       d_intersections{ context, total_tile_samples },
       d_samples{ context, total_tile_samples },
-      d_pixels{ context, num_pixels },
+      d_pixels{ context, total_film_pixels },
       d_xorshift_state{ context, total_tile_samples }
 {}
 

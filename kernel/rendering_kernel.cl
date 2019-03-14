@@ -612,15 +612,32 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                              __global const float* uv_s, __global const float* uv_t,
                              __global const unsigned int* primitive_index,
                              // Next ray direction
-                             __global const float* ray_direction_x, __global const float* ray_direction_y, __global const float* ray_direction_z)
+                             __global const float* ray_direction_x, __global const float* ray_direction_y, __global const float* ray_direction_z,
+                             // Materials
+                             __global const DiffuseMaterial* materials, __global const unsigned int* materials_indices,
+                             // Total number of samples
+                             unsigned int total_samples)
 {
-
+    const unsigned int tid = get_global_id(0);
+    if (tid < total_samples && ray_depth[tid] != RAY_TO_RESTART_DEPTH && ray_depth[tid] != RAY_DONE_DEPTH)
+    {
+        // For the moment, just store the normal
+        Li_r[tid] = fabs(normal_x[tid]);
+        Li_g[tid] = fabs(normal_y[tid]);
+        Li_b[tid] = fabs(normal_z[tid]);
+    }
 }
 
 /*
  * Deposit samples on raster kernel
  */
-__kernel void DepositSamples()
+__kernel void DepositSamples(// Samples description
+                             __global float* Li_r, __global float* Li_g, __global float* Li_b,
+                             __global unsigned int* pixel_x, __global unsigned int* pixel_y,
+                             __global float* sample_offset_x, __global float* sample_offset_y,
+                             // Target image pixels
+                             
+                             )
 {
     return;
 }
