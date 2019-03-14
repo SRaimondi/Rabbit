@@ -659,11 +659,11 @@ __kernel void DepositSamples(__constant const Camera* camera,
                              unsigned int total_samples)
 {
     const unsigned int tid = get_global_id(0);
-    if (tid < total_samples && ray_depth[tid] != RAY_DONE_DEPTH && ray_depth[tid] == RAY_TO_RESTART_DEPTH)
+    if (tid < total_samples && ray_depth[tid] != RAY_DONE_DEPTH /*&& ray_depth[tid] == RAY_TO_RESTART_DEPTH*/)
     {
         // Get coordinates of the pixel the thread worked on
         const unsigned int target_pixel_linear = pixel_x[tid] + pixel_y[tid] * camera->image_width;
-        // Atmically add the radiance values to the pixel
+        // Atomically add the radiance values to the pixel
         AtomicAddGF(&pixel_r[target_pixel_linear], Li_r[tid]);
         AtomicAddGF(&pixel_g[target_pixel_linear], Li_g[tid]);
         AtomicAddGF(&pixel_b[target_pixel_linear], Li_b[tid]);
