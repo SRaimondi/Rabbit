@@ -423,6 +423,7 @@ __kernel void RestartSample(__constant const Camera* camera,
                 {
                     // Only update pixel x coordinate
                     px = current_pixel_x + tile_width;
+                    py = current_pixel_y;
                 }
                 else 
                 {
@@ -626,7 +627,7 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                              __global const unsigned int* primitive_index,
                              // Next ray direction
                              __global const float* ray_direction_x, __global const float* ray_direction_y, __global const float* ray_direction_z,
-                             __global const unsigned int* ray_depth,
+                             __global unsigned int* ray_depth,
                              // Materials
                              __global const DiffuseMaterial* materials, __global const unsigned int* materials_indices,
                              // Total number of samples
@@ -639,6 +640,7 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
         Li_r[tid] = fabs(normal_x[tid]);
         Li_g[tid] = fabs(normal_y[tid]);
         Li_b[tid] = fabs(normal_z[tid]);
+        ray_depth[tid] = RAY_TO_RESTART_DEPTH;
     }
 }
 
@@ -659,7 +661,7 @@ __kernel void DepositSamples(__constant const Camera* camera,
                              unsigned int total_samples)
 {
     const unsigned int tid = get_global_id(0);
-    if (tid < total_samples && ray_depth[tid] != RAY_DONE_DEPTH /*&& ray_depth[tid] == RAY_TO_RESTART_DEPTH*/)
+    if (tid < total_samples && ray_depth[tid] != RAY_DONE_DEPTH && ray_depth[tid] == RAY_TO_RESTART_DEPTH)
     {
         // Get coordinates of the pixel the thread worked on
         const unsigned int target_pixel_linear = pixel_x[tid] + pixel_y[tid] * camera->image_width;
