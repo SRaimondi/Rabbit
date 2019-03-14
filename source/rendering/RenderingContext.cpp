@@ -5,6 +5,9 @@
 #include "RenderingContext.hpp"
 #include "CLError.hpp"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_writer.hpp"
+
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -64,7 +67,74 @@ void RenderingContext::Cleanup() noexcept
 
 void RenderingContext::CreateImage(const std::string& filename) const
 {
+    cl_int err_code{ CL_SUCCESS };
+    const size_t buffer_size{ output_image_height * output_image_width * sizeof(cl_float) };
 
+    auto pixel_r = static_cast<float*>(clEnqueueMapBuffer(tile_rendering_context.command_queue,
+                                                          tile_rendering_context.rendering_data.d_pixels.pixel_r,
+                                                          CL_MAP_READ,
+                                                          CL_TRUE,
+                                                          0,
+                                                          buffer_size,
+                                                          0,
+                                                          nullptr,
+                                                          nullptr,
+                                                          &err_code));
+    CL_CHECK_STATUS(err_code);
+
+    auto pixel_g = static_cast<float*>(clEnqueueMapBuffer(tile_rendering_context.command_queue,
+                                                          tile_rendering_context.rendering_data.d_pixels.pixel_g,
+                                                          CL_MAP_READ,
+                                                          CL_TRUE,
+                                                          0,
+                                                          buffer_size,
+                                                          0,
+                                                          nullptr,
+                                                          nullptr,
+                                                          &err_code));
+    CL_CHECK_STATUS(err_code);
+
+    auto pixel_b = static_cast<float*>(clEnqueueMapBuffer(tile_rendering_context.command_queue,
+                                                          tile_rendering_context.rendering_data.d_pixels.pixel_b,
+                                                          CL_MAP_READ,
+                                                          CL_TRUE,
+                                                          0,
+                                                          buffer_size,
+                                                          0,
+                                                          nullptr,
+                                                          nullptr,
+                                                          &err_code));
+    CL_CHECK_STATUS(err_code);
+
+    auto filter_weight = static_cast<float*>(clEnqueueMapBuffer(tile_rendering_context.command_queue,
+                                                                tile_rendering_context.rendering_data.d_pixels.filter_weight,
+                                                                CL_MAP_READ,
+                                                                CL_TRUE,
+                                                                0,
+                                                                buffer_size,
+                                                                0,
+                                                                nullptr,
+                                                                nullptr,
+                                                                &err_code));
+    CL_CHECK_STATUS(err_code);
+
+    // Convert data to format for stbi image write
+    std::vector<unsigned char> uchar_raster(3 * output_image_width * output_image_height, 0);
+    for (unsigned int i = 0; i != uchar_raster.size() / 3; i++)
+    {
+        const float inv_filter_weight{ 1.f / filter_weight[i] };
+        uchar_raster[3 * i] = static_cast<unsigned char>(pixel_r[i] * inv_filter_weight * 255);
+        uchar_raster[3 * i + 1] = static_cast<unsigned char>(pixel_g[i] * inv_filter_weight * 255);
+        uchar_raster[3 * i + 2] = static_cast<unsigned char>(pixel_b[i] * inv_filter_weight * 255);
+    }
+
+    // Write image, set flip vertical axis before
+    stbi_flip_vertically_on_write(1);
+    if (!stbi_write_png(filename.c_str(), output_image_width, output_image_height, 3, uchar_raster.data(), 0))
+    {
+        throw std::runtime_error("Error creating PNG image");
+    }
+    stbi_flip_vertically_on_write(0);
 }
 
 } // CL namespace

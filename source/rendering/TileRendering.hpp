@@ -30,6 +30,8 @@ public:
     void Render() const;
 
 private:
+    friend class RenderingContext;
+
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;
 

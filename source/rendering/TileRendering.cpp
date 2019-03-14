@@ -6,10 +6,6 @@
 #include "FileIO.hpp"
 #include "CLError.hpp"
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-
-#include "stb_image_writer.hpp"
-
 #include <iostream>
 #include <limits>
 #include <array>
@@ -53,8 +49,6 @@ void TileRendering::Render() const
     // Synchronisation events
     cl_event initialise_event, restart_event, intersect_event,
         sample_event, update_radiance_event, deposit_samples_event;
-    // Profiling variables
-    cl_ulong start_time, end_time;
 
     // Initially set all pixels and filter weight to zero
     SetRasterToZero();
@@ -101,73 +95,6 @@ void TileRendering::Render() const
         // Deposit samples
         rendering_kernel.RunDepositSamples(command_queue, 1, &update_radiance_event, &deposit_samples_event);
     }
-
-    // Now that the rendering is done, we can map the memory
-    cl_int err_code{ CL_SUCCESS };
-    auto pixel_r = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                          rendering_data.d_pixels.pixel_r,
-                                                          CL_MAP_READ,
-                                                          CL_TRUE,
-                                                          0,
-                                                          rendering_data.d_pixels.num_pixels * sizeof(cl_float),
-                                                          1,
-                                                          &deposit_samples_event,
-                                                          nullptr,
-                                                          &err_code));
-    CL_CHECK_STATUS(err_code);
-    auto pixel_g = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                          rendering_data.d_pixels.pixel_g,
-                                                          CL_MAP_READ,
-                                                          CL_TRUE,
-                                                          0,
-                                                          rendering_data.d_pixels.num_pixels * sizeof(cl_float),
-                                                          1,
-                                                          &deposit_samples_event,
-                                                          nullptr,
-                                                          &err_code));
-    CL_CHECK_STATUS(err_code);
-    auto pixel_b = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                          rendering_data.d_pixels.pixel_b,
-                                                          CL_MAP_READ,
-                                                          CL_TRUE,
-                                                          0,
-                                                          rendering_data.d_pixels.num_pixels * sizeof(cl_float),
-                                                          1,
-                                                          &deposit_samples_event,
-                                                          nullptr,
-                                                          &err_code));
-    CL_CHECK_STATUS(err_code);
-
-    auto filter_weight = static_cast<float*>(clEnqueueMapBuffer(command_queue,
-                                                                rendering_data.d_pixels.filter_weight,
-                                                                CL_MAP_READ,
-                                                                CL_TRUE,
-                                                                0,
-                                                                rendering_data.d_pixels.num_pixels * sizeof(cl_float),
-                                                                1,
-                                                                &deposit_samples_event,
-                                                                nullptr,
-                                                                &err_code));
-    CL_CHECK_STATUS(err_code);
-
-    std::vector<unsigned char> uchar_raster(3 * 1024 * 1024, 0);
-    for (unsigned int i = 0; i != uchar_raster.size() / 3; i++)
-    {
-        uchar_raster[3 * i] = static_cast<unsigned char>(pixel_r[i] / filter_weight[i] * 255);
-        uchar_raster[3 * i + 1] = static_cast<unsigned char>(pixel_g[i] / filter_weight[i] * 255);
-        uchar_raster[3 * i + 2] = static_cast<unsigned char>(pixel_b[i] / filter_weight[i] * 255);
-//        uchar_raster[3 * i] = static_cast<unsigned char>(std::abs(ray_direction_x[i]) * 255);
-//        uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::abs(ray_direction_y[i]) * 255);
-//        uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::abs(ray_direction_z[i]) * 255);
-    }
-
-    // Write image, set flip vertical axis before
-    stbi_flip_vertically_on_write(1);
-    if (!stbi_write_png("test.png", 1024, 1024, 3, uchar_raster.data(), 0))
-    {
-        throw std::runtime_error("Error creating PNG image");
-    }
-    stbi_flip_vertically_on_write(0);
 }
 
 void TileRendering::Cleanup() noexcept
