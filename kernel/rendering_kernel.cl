@@ -15,6 +15,9 @@
 #define TWO_PI                  6.28318530718f
 #define ONE_OVER_2PI            0.15915494309f
 #define EPS                     0.0001f
+#define RAY_OFFSET              0.001f
+
+#define MAX_DEPTH               5
 
 /*
  * 2D / 3D vector struct
@@ -153,8 +156,8 @@ typedef struct
 } Camera;
 
 inline Vector3 GenerateRayDirection(__constant const Camera* camera,
-                                   unsigned int px, unsigned int py,
-                                   float sx, float sy)
+                                    unsigned int px, unsigned int py,
+                                    float sx, float sy)
 {
     const float vp_x = camera->left * (1.f - 2.f * (px + sx) * camera->inv_width);
     const float vp_y = camera->bottom * (1.f - 2.f * (py + sy) * camera->inv_height);
@@ -599,9 +602,9 @@ __kernel void SampleBRDF(// Rays description
                                             wi.x * s.z + wi.y * n.z + wi.z * t.z);
 
         // Set new ray start
-        ray_origin_x[tid] = hit_point_x[tid] + EPS * wi_world.x;
-        ray_origin_y[tid] = hit_point_y[tid] + EPS * wi_world.y;
-        ray_origin_z[tid] = hit_point_z[tid] + EPS * wi_world.z;
+        ray_origin_x[tid] = hit_point_x[tid] + RAY_OFFSET * wi_world.x;
+        ray_origin_y[tid] = hit_point_y[tid] + RAY_OFFSET * wi_world.y;
+        ray_origin_z[tid] = hit_point_z[tid] + RAY_OFFSET * wi_world.z;
 
         // Set new ray direction
         ray_direction_x[tid] = wi_world.x;
@@ -636,11 +639,54 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
     const unsigned int tid = get_global_id(0);
     if (tid < total_samples && ray_depth[tid] != RAY_TO_RESTART_DEPTH && ray_depth[tid] != RAY_DONE_DEPTH)
     {
-        // For the moment, just store the normal
-        Li_r[tid] = fabs(normal_x[tid]);
-        Li_g[tid] = fabs(normal_y[tid]);
-        Li_b[tid] = fabs(normal_z[tid]);
-        ray_depth[tid] = RAY_TO_RESTART_DEPTH;
+        if (ray_depth[tid] + 1 <= MAX_DEPTH)
+        {
+            // Load material for the hit shape
+            const DiffuseMaterial material = materials[materials_indices[primitive_index[tid]]];
+
+            // Check if material is emitting
+            if (!IsBlack(material.emission_r, material.emission_g, material.emission_b))
+            {
+                // If the ray is primary, we store the emission
+                if (ray_depth[tid] == 0)
+                {
+                    Li_r[tid] = material.emission_r;
+                    Li_g[tid] = material.emission_g;
+                    Li_b[tid] = material.emission_b;
+                }
+                else
+                {
+                    // Add emission contribution
+                    Li_r[tid] = beta_r[tid] * material.emission_r;
+                    Li_g[tid] = beta_g[tid] * material.emission_g;
+                    Li_b[tid] = beta_b[tid] * material.emission_b;
+                }
+                // The sample can now be stored
+                ray_depth[tid] = RAY_TO_RESTART_DEPTH;
+            }
+            else
+            {
+                // Compute dot product of normal and light direction
+                const float n_dot_wi =  normal_x[tid] * ray_direction_x[tid] +
+                                        normal_y[tid] * ray_direction_y[tid] +
+                                        normal_z[tid] * ray_direction_z[tid];
+                // Compute the 1 / PDF for the next direction
+                const float inv_pdf = 1.f / CosineSampleHemispherePdf(n_dot_wi);
+                // Evaluate the BRDF value
+                const float brdf_r = material.rho_r * M_1_PI_F;
+                const float brdf_g = material.rho_g * M_1_PI_F;
+                const float brdf_b = material.rho_b * M_1_PI_F;
+
+                // Accumulate the value of beta
+                beta_r[tid] *= brdf_r * n_dot_wi * inv_pdf;
+                beta_g[tid] *= brdf_g * n_dot_wi * inv_pdf;
+                beta_b[tid] *= brdf_b * n_dot_wi * inv_pdf;
+            }
+        }
+        else
+        {
+            ray_depth[tid] = RAY_TO_RESTART_DEPTH;
+        }
     }
 }
 
