@@ -637,9 +637,17 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                              unsigned int total_samples)
 {
     const unsigned int tid = get_global_id(0);
-    if (tid < total_samples && ray_depth[tid] != RAY_TO_RESTART_DEPTH && ray_depth[tid] != RAY_DONE_DEPTH)
+    if (tid < total_samples && ray_depth[tid] != RAY_DONE_DEPTH)
     {
-        if (ray_depth[tid] + 1 <= MAX_DEPTH)
+        // Check if ray escaped
+        if (ray_depth[tid] == RAY_TO_RESTART_DEPTH)
+        {
+            // Add background emission contribution
+            Li_r[tid] = beta_r[tid];
+            Li_g[tid] = beta_g[tid];
+            Li_b[tid] = beta_b[tid];
+        }
+        else if (ray_depth[tid] + 1 <= MAX_DEPTH)
         {
             // Load material for the hit shape
             const DiffuseMaterial material = materials[materials_indices[primitive_index[tid]]];
@@ -650,9 +658,10 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                 // If the ray is primary, we store the emission
                 if (ray_depth[tid] == 0)
                 {
-                    Li_r[tid] = material.emission_r;
-                    Li_g[tid] = material.emission_g;
-                    Li_b[tid] = material.emission_b;
+                    const float Li = fmax(ray_direction_y[tid], 0.f);
+                    Li_r[tid] = material.emission_r * Li;
+                    Li_g[tid] = material.emission_g * Li;
+                    Li_b[tid] = material.emission_b * Li;
                 }
                 else
                 {
@@ -671,13 +680,24 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                                         normal_y[tid] * ray_direction_y[tid] +
                                         normal_z[tid] * ray_direction_z[tid];
                 // Compute the 1 / PDF for the next direction
-                const float inv_pdf = 1.f / CosineSampleHemispherePdf(n_dot_wi);
+                const float pdf = CosineSampleHemispherePdf(n_dot_wi);
+                if (pdf == 0.f)
+                {
+                    ray_depth[tid] = RAY_TO_RESTART_DEPTH;
+                    return;
+                }
                 // Evaluate the BRDF value
                 const float brdf_r = material.rho_r * M_1_PI_F;
                 const float brdf_g = material.rho_g * M_1_PI_F;
                 const float brdf_b = material.rho_b * M_1_PI_F;
+                if (IsBlack(brdf_r, brdf_g, brdf_b))
+                {
+                    ray_depth[tid] = RAY_TO_RESTART_DEPTH;
+                    return;
+                }
 
                 // Accumulate the value of beta
+                const float inv_pdf = 1.f / pdf;
                 beta_r[tid] *= brdf_r * n_dot_wi * inv_pdf;
                 beta_g[tid] *= brdf_g * n_dot_wi * inv_pdf;
                 beta_b[tid] *= brdf_b * n_dot_wi * inv_pdf;
