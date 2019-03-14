@@ -58,6 +58,15 @@ public:
                        cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
                        cl_event* kernel_event = nullptr) const;
 
+    // Launch the UpdateRadiance kernel
+    void RunUpdateRadiance(cl_command_queue queue,
+                           cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
+                           cl_event* kernel_event = nullptr) const;
+
+    void RunDepositSamples(cl_command_queue queue,
+                           cl_uint num_wait_events = 0, const cl_event* wait_events = nullptr,
+                           cl_event* kernel_event = nullptr) const;
+
 private:
     // Load kernel program source and build program
     cl_program BuildProgram(cl_context context, cl_device_id device, const std::string& kernel_filename) const;
@@ -83,23 +92,22 @@ private:
     // Set arguments for SampleBRDF kernel
     void SetSampleBRDFKernelArgs(const RenderingData& rendering_data, const TileDescription& tile_description);
 
+    // Set arguments for UpdateRadiance kernel
+    void SetUpdateRadianceKernelArgs(const RenderingData& rendering_data, const TileDescription& tile_description,
+                                     const ::CL::Scene& scene);
+
+    // Set arguments for DepositSamples kernel
+    void SetDepositSamplesKernelArgs(const RenderingData& rendering_data, const TileDescription& tile_description,
+                                     const ::CL::Scene& scene);
+
     // Get preferred wg multiple size and max wg size for a kernel
     std::pair<size_t, size_t> GetWGInfo(cl_kernel kernel, cl_device_id device) const;
 
     // Setup kernel launch sizes
     void SetupLaunchConfig(const TileDescription& tile_description, cl_device_id device);
 
-    // Setup launch config for Initialise kernel
-    void SetupInitialiseLaunchConfig(const TileDescription& tile_description, cl_device_id device);
-
-    // Setup launch config for Restart kernel
-    void SetupRestartLaunchConfig(const TileDescription& tile_description, cl_device_id device);
-
-    // Setup launch config for Intersect kernel
-    void SetupIntersectLaunchConfig(const TileDescription& tile_description, cl_device_id device);
-
-    // Set launch config for SampleBRDF kernel
-    void SetupSampleBRDFLaunchConfig(const TileDescription& tile_description, cl_device_id device);
+    void SetupLaunchConfigKernel(cl_kernel kernel, KernelLaunchSize& launch_size,
+                                 const TileDescription& tile_description, cl_device_id device);
 
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;
@@ -121,10 +129,12 @@ private:
     KernelLaunchSize sample_brdf_launch_config;
 
     // Update radiance kernel
-    // cl_kernel update_radiance_kernel;
+    cl_kernel update_radiance_kernel;
+    KernelLaunchSize update_radiance_launch_config;
 
     // Deposit the sample comping radiance to the pixel it belongs to
-    // cl_kernel deposit_samples_kernel;
+    cl_kernel deposit_samples_kernel;
+    KernelLaunchSize deposit_samples_launch_config;
 };
 
 } // CL namespace

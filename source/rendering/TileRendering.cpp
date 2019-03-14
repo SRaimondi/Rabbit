@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <limits>
+#include <array>
 
 namespace Rendering
 {
@@ -54,6 +55,9 @@ void TileRendering::Render() const
     cl_event initialise_event, restart_event, intersect_event, sample_event;
     // Profiling variables
     cl_ulong start_time, end_time;
+
+    // Initially set all pixels and filter weight to zero
+    SetRasterToZero();
 
     // Run Initialise kernel
     rendering_kernel.RunInitialise(command_queue, 0, nullptr, &initialise_event);
@@ -193,6 +197,24 @@ void TileRendering::Cleanup() noexcept
         // TODO operator<< could throw
         std::cerr << ex.what() << std::endl;
     }
+}
+
+void TileRendering::SetRasterToZero() const
+{
+    std::array<cl_event, 4> fill_events;
+
+    const cl_float zero{ 0 };
+    const size_t buffer_size{ rendering_data.d_pixels.num_pixels * sizeof(cl_float) };
+
+    CL_CHECK_CALL(clEnqueueFillBuffer(command_queue, rendering_data.d_pixels.pixel_r, &zero, sizeof(cl_float),
+                                      0, buffer_size, 0, nullptr, &fill_events[0]));
+    CL_CHECK_CALL(clEnqueueFillBuffer(command_queue, rendering_data.d_pixels.pixel_g, &zero, sizeof(cl_float),
+                                      0, buffer_size, 0, nullptr, &fill_events[1]));
+    CL_CHECK_CALL(clEnqueueFillBuffer(command_queue, rendering_data.d_pixels.pixel_b, &zero, sizeof(cl_float),
+                                      0, buffer_size, 0, nullptr, &fill_events[2]));
+    CL_CHECK_CALL(clEnqueueFillBuffer(command_queue, rendering_data.d_pixels.filter_weight, &zero, sizeof(cl_float),
+                                      0, buffer_size, 0, nullptr, &fill_events[3]));
+    CL_CHECK_CALL(clWaitForEvents(4, fill_events.data()));
 }
 
 } // CL namespace

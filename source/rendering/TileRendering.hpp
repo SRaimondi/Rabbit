@@ -33,6 +33,9 @@ private:
     // Cleanup OpenCL resource without throwing
     void Cleanup() noexcept;
 
+    // Set pixel and filter weight to 0
+    void SetRasterToZero() const;
+
     // Command queue where the commands are issued for the tile rendering
     cl_command_queue command_queue;
 

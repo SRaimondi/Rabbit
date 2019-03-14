@@ -321,6 +321,26 @@ inline float GenerateFloat(__global unsigned int* xorshift_state)
 }
 
 /*
+ * Atomic increment
+ */
+inline void AtomicAddGF(volatile __global float *addr, float val)
+{
+    union 
+    {
+        unsigned int u32;
+        float f32;
+    } next, expected, current;
+
+    current.f32 = *addr;
+    do 
+    {
+        expected.f32 = current.f32;
+        next.f32 = expected.f32 + val;
+        current.u32  = atomic_cmpxchg((volatile __global unsigned int *)addr, expected.u32, next.u32);
+    } while(current.u32 != expected.u32);
+}
+
+/*
  * Initialise kernel only sets the ray depth to DONE and the seed for the random number generation
  */
 __kernel void Initialise(// The ray depth is set to RAY_FIRST_TILE_DEPTH so the Restart kernel sets it to the proper values for the first tile
@@ -463,15 +483,6 @@ __kernel void RestartSample(__constant const Camera* camera,
 
                 // Reset primitive index
                 primitive_index[tid] = INVALID_PRIM_INDEX;
-
-                // If the thread id is the first sample in the pixel, reset the raster values
-                if (tid % samples_per_pixel == 0)
-                {
-                    pixel_r[tid] = 0.f;
-                    pixel_g[tid] = 0.f;
-                    pixel_b[tid] = 0.f;
-                    filter_weight[tid] = 0.f;
-                }
             }
             else
             {
@@ -562,6 +573,7 @@ __kernel void SampleBRDF(// Rays description
                          // Intersection information
                          __global const float* hit_point_x, __global const float* hit_point_y, __global const float* hit_point_z,
                          __global const float* normal_x, __global const float* normal_y, __global const float* normal_z,
+                         __global const float* wo_x, __global const float* wo_y, __global const float* wo_z,
                          // Random number generator state
                          __global unsigned int* xorshift_state,
                          // Total number of samples
@@ -610,9 +622,11 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                              __global const float* hit_point_x, __global const float* hit_point_y, __global const float* hit_point_z,
                              __global const float* normal_x, __global const float* normal_y, __global const float* normal_z,
                              __global const float* uv_s, __global const float* uv_t,
+                             __global const float* wo_x, __global const float* wo_y, __global const float* wo_z,
                              __global const unsigned int* primitive_index,
                              // Next ray direction
                              __global const float* ray_direction_x, __global const float* ray_direction_y, __global const float* ray_direction_z,
+                             __global const unsigned int* ray_depth,
                              // Materials
                              __global const DiffuseMaterial* materials, __global const unsigned int* materials_indices,
                              // Total number of samples
@@ -631,13 +645,28 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
 /*
  * Deposit samples on raster kernel
  */
-__kernel void DepositSamples(// Samples description
-                             __global float* Li_r, __global float* Li_g, __global float* Li_b,
-                             __global unsigned int* pixel_x, __global unsigned int* pixel_y,
-                             __global float* sample_offset_x, __global float* sample_offset_y,
+__kernel void DepositSamples(__constant const Camera* camera,
+                             // Samples description
+                             __global const float* Li_r, __global const float* Li_g, __global const float* Li_b,
+                             __global const unsigned int* pixel_x, __global const unsigned int* pixel_y,
+                             __global const float* sample_offset_x, __global const float* sample_offset_y,
+                             // Ray depth
+                             __global const unsigned int* ray_depth,
                              // Target image pixels
-                             
-                             )
+                             __global float* pixel_r, __global float* pixel_g, __global float* pixel_b,
+                             __global float* filter_weight,
+                             // Total number of samples
+                             unsigned int total_samples)
 {
-    return;
+    const unsigned int tid = get_global_id(0);
+    if (tid < total_samples && ray_depth[tid] != RAY_DONE_DEPTH && ray_depth[tid] == RAY_TO_RESTART_DEPTH)
+    {
+        // Get coordinates of the pixel the thread worked on
+        const unsigned int target_pixel_linear = pixel_x[tid] + pixel_y[tid] * camera->image_width;
+        // Atmically add the radiance values to the pixel
+        AtomicAddGF(&pixel_r[target_pixel_linear], Li_r[tid]);
+        AtomicAddGF(&pixel_g[target_pixel_linear], Li_g[tid]);
+        AtomicAddGF(&pixel_b[target_pixel_linear], Li_b[tid]);
+        AtomicAddGF(&filter_weight[target_pixel_linear], 1.f);
+    }
 }
