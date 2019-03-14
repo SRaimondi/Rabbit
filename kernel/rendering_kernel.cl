@@ -607,10 +607,11 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                              __global float* Li_r, __global float* Li_g, __global float* Li_b,
                              __global float* beta_r, __global float* beta_g, __global float* beta_b,
                              // Intersection information
+                             __global const float* hit_point_x, __global const float* hit_point_y, __global const float* hit_point_z,
                              __global const float* normal_x, __global const float* normal_y, __global const float* normal_z,
                              __global const float* uv_s, __global const float* uv_t,
                              __global const unsigned int* primitive_index,
-                             // Current ray direction, assumed to be normalized
+                             // Next ray direction
                              __global const float* ray_direction_x, __global const float* ray_direction_y, __global const float* ray_direction_z)
 {
 

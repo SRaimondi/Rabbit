@@ -6,6 +6,7 @@
 #define RABBIT_VECTOR_HPP
 
 #include <cmath>
+#include <algorithm>
 
 // A very simple 3D vector implementation used on the host for geometry computations
 struct Vector3
@@ -86,6 +87,16 @@ inline void NormalizeInPlace(Vector3& v) noexcept
     v.x *= inv_norm;
     v.y *= inv_norm;
     v.z *= inv_norm;
+}
+
+constexpr const Vector3 Max(const Vector3& lhs, const Vector3& rhs) noexcept
+{
+    return { std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y), std::max(lhs.z, rhs.z) };
+}
+
+constexpr const Vector3 Min(const Vector3& lhs, const Vector3& rhs) noexcept
+{
+    return { std::min(lhs.x, rhs.x), std::min(lhs.y, rhs.y), std::min(lhs.z, rhs.z) };
 }
 
 #endif //RABBIT_VECTOR_HPP
