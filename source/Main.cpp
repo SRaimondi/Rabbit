@@ -5,6 +5,7 @@
 #include <array>
 #include <iostream>
 #include <memory>
+#include <random>
 
 int main(int argc, const char** argv)
 {
@@ -17,10 +18,47 @@ int main(int argc, const char** argv)
     try
     {
         // Read scene description
-        const SceneDescription scene_description{ SceneParser::ReadSceneDescription(argv[1]) };
+        // const SceneDescription scene_description{ SceneParser::ReadSceneDescription(argv[1]) };
+
+        // Random scene description
+        SceneDescription scene_description;
+        scene_description.image_width = 1920;
+        scene_description.image_height = 1080;
+        scene_description.tile_width = 32;
+        scene_description.tile_height = 32;
+        scene_description.pixel_samples = 1024;
+
+        scene_description.loaded_spheres.emplace_back(0.f, -5000.f, 0.f, 5000.f);
+        scene_description.loaded_materials.emplace_back(0.9f, 0.9f, 0.9f, 0.f, 0.f, 0.f);
+        scene_description.material_index.push_back(0);
+
+        scene_description.loaded_spheres.emplace_back(0.f, 0.f, 0.f, 10000.f);
+        scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, .6f, .6f, .6f);
+        scene_description.material_index.push_back(1);
+
+        std::mt19937 generator;
+        std::uniform_real_distribution<float> position(-30.f, 30.f);
+        std::uniform_real_distribution<float> radius(1.f, 4.f);
+        std::uniform_real_distribution<float> color(0.2f, 0.99f);
+        std::uniform_real_distribution<float> emitting;
+
+        for (unsigned int s = 0; s != 70; s++)
+        {
+            const float r{ radius(generator) };
+            scene_description.loaded_spheres.emplace_back(position(generator), r, position(generator), r);
+            if (emitting(generator) < 0.2f)
+            {
+                scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, 1.f, 1.f, 1.f);
+            }
+            else
+            {
+                scene_description.loaded_materials.emplace_back(color(generator), color(generator), color(generator), 0.f, 0.f, 0.f);
+            }
+            scene_description.material_index.push_back(scene_description.loaded_materials.size() - 1);
+        }
 
         // Create camera
-        const Rendering::Camera camera{ Vector3{ -5.f, 10.f, -20.f }, Vector3{ 0.f }, Vector3{ 0.f, 1.f, 0.f },
+        const Rendering::Camera camera{ Vector3{ 10.f, 40.f, -60.f }, Vector3{ 0.f }, Vector3{ 0.f, 1.f, 0.f },
                                         45.f, scene_description.image_width, scene_description.image_height };
 
         cl_uint num_platforms;
@@ -126,7 +164,11 @@ int main(int argc, const char** argv)
         const CL::Scene scene{ context, scene_description, camera };
         Rendering::CL::RenderingContext rendering_context{ context, selected_device, scene_description, scene };
 
+        const auto start = std::chrono::high_resolution_clock::now();
         rendering_context.Render("render.png");
+        const auto end = std::chrono::high_resolution_clock::now();
+
+        std::cout << "Rendering time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms\n";
 
         // Cleanup
         clReleaseContext(context);
