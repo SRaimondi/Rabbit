@@ -33,13 +33,13 @@ int main(int argc, const char** argv)
         scene_description.material_index.push_back(0);
 
         scene_description.loaded_spheres.emplace_back(0.f, 0.f, 0.f, 10000.f);
-        scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, .6f, .6f, .6f);
+        scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, .7f, .7f, .7f);
         scene_description.material_index.push_back(1);
 
         std::mt19937 generator;
         std::uniform_real_distribution<float> position(-30.f, 30.f);
         std::uniform_real_distribution<float> radius(1.f, 4.f);
-        std::uniform_real_distribution<float> color(0.2f, 0.99f);
+        std::uniform_real_distribution<float> color(0.4f, 0.99f);
         std::uniform_real_distribution<float> emitting;
 
         for (unsigned int s = 0; s != 70; s++)

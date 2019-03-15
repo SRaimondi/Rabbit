@@ -125,9 +125,9 @@ void RenderingContext::CreateImage(const std::string& filename) const
     for (unsigned int i = 0; i != uchar_raster.size() / 3; i++)
     {
         const float inv_filter_weight{ 1.f / filter_weight[i] };
-        uchar_raster[3 * i] = static_cast<unsigned char>(std::min(pixel_r[i] * inv_filter_weight, 1.f) * 255);
-        uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::min(pixel_g[i] * inv_filter_weight, 1.f) * 255);
-        uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::min(pixel_b[i] * inv_filter_weight, 1.f) * 255);
+        uchar_raster[3 * i] = static_cast<unsigned char>(std::pow(std::min(pixel_r[i] * inv_filter_weight, 1.f), 2.2f) * 255);
+        uchar_raster[3 * i + 1] = static_cast<unsigned char>(std::pow(std::min(pixel_g[i] * inv_filter_weight, 1.f), 2.2f) * 255);
+        uchar_raster[3 * i + 2] = static_cast<unsigned char>(std::pow(std::min(pixel_b[i] * inv_filter_weight, 1.f), 2.2f) * 255);
     }
 
     // Unmap buffers
