@@ -658,10 +658,9 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                 // If the ray is primary, we store the emission
                 if (ray_depth[tid] == 0)
                 {
-                    const float Li = fmax(ray_direction_y[tid], 0.f);
-                    Li_r[tid] = material.emission_r * Li;
-                    Li_g[tid] = material.emission_g * Li;
-                    Li_b[tid] = material.emission_b * Li;
+                    Li_r[tid] = material.emission_r;
+                    Li_g[tid] = material.emission_g;
+                    Li_b[tid] = material.emission_b;
                 }
                 else
                 {
