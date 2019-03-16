@@ -32,23 +32,23 @@ int main(int argc, const char** argv)
         scene_description.loaded_materials.emplace_back(0.9f, 0.9f, 0.9f, 0.f, 0.f, 0.f);
         scene_description.material_index.push_back(0);
 
-        scene_description.loaded_spheres.emplace_back(0.f, 0.f, 0.f, 10000.f);
-        scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, .7f, .7f, .7f);
+        scene_description.loaded_spheres.emplace_back(0.f, 0.f, 0.f, 5000.f);
+        scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, 1.f, 1.f, 1.f);
         scene_description.material_index.push_back(1);
 
         std::mt19937 generator;
-        std::uniform_real_distribution<float> position(-30.f, 30.f);
-        std::uniform_real_distribution<float> radius(1.f, 4.f);
+        std::uniform_real_distribution<float> position(-40.f, 40.f);
+        std::uniform_real_distribution<float> radius(0.5f, 5.f);
         std::uniform_real_distribution<float> color(0.4f, 0.99f);
         std::uniform_real_distribution<float> emitting;
 
-        for (unsigned int s = 0; s != 70; s++)
+        for (unsigned int s = 0; s != 100; s++)
         {
             const float r{ radius(generator) };
             scene_description.loaded_spheres.emplace_back(position(generator), r, position(generator), r);
             if (emitting(generator) < 0.2f)
             {
-                scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, 1.f, 1.f, 1.f);
+                scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, 1.5f, 1.5f, 1.5f);
             }
             else
             {
@@ -58,7 +58,7 @@ int main(int argc, const char** argv)
         }
 
         // Create camera
-        const Rendering::Camera camera{ Vector3{ 10.f, 40.f, -60.f }, Vector3{ 0.f }, Vector3{ 0.f, 1.f, 0.f },
+        const Rendering::Camera camera{ Vector3{ 40.f, 60.f, -70.f }, Vector3{ 0.f }, Vector3{ 0.f, 1.f, 0.f },
                                         45.f, scene_description.image_width, scene_description.image_height };
 
         cl_uint num_platforms;
@@ -108,13 +108,13 @@ int main(int argc, const char** argv)
 
         // Select device from platform
         cl_uint num_devices;
-        CL_CHECK_CALL(clGetDeviceIDs(selected_platform, CL_DEVICE_TYPE_GPU, 0, nullptr, &num_devices));
+        CL_CHECK_CALL(clGetDeviceIDs(selected_platform, CL_DEVICE_TYPE_ALL, 0, nullptr, &num_devices));
         if (num_devices == 0)
         {
-            throw std::runtime_error("No available GPU devices in selected platform");
+            throw std::runtime_error("No available devices in selected platform");
         }
         std::vector<cl_device_id> devices(num_devices);
-        CL_CHECK_CALL(clGetDeviceIDs(selected_platform, CL_DEVICE_TYPE_GPU, num_devices, devices.data(), nullptr));
+        CL_CHECK_CALL(clGetDeviceIDs(selected_platform, CL_DEVICE_TYPE_ALL, num_devices, devices.data(), nullptr));
 
         // Select device by name
         cl_device_id selected_device;

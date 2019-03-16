@@ -10,7 +10,7 @@
 #define RAY_DONE_DEPTH          4294967295u
 
 #define XORSHIFT_STATE_START    5293385u
-#define XORSHIFT_STATE_MULT     68435u
+#define XORSHIFT_STATE_MULT     1u
 
 #define TWO_PI                  6.28318530718f
 #define ONE_OVER_2PI            0.15915494309f
@@ -449,7 +449,7 @@ __kernel void RestartSample(__constant const Camera* camera,
             // Check we are inside the image
             if (px < camera->image_width && py < camera->image_height)
             {
-                // Reset samples' accumulated radiance
+                // Reset samples' accumulated value
                 Li_r[tid] = 0.f;
                 Li_g[tid] = 0.f;
                 Li_b[tid] = 0.f;
@@ -644,7 +644,7 @@ __kernel void UpdateRadiance(// Current radiance along the ray and masking term
                              unsigned int total_samples)
 {
     const unsigned int tid = get_global_id(0);
-    if (tid < total_samples && ray_depth[tid] != RAY_DONE_DEPTH & ray_depth[tid] != RAY_TO_RESTART_DEPTH)
+    if (tid < total_samples && ray_depth[tid] != RAY_DONE_DEPTH && ray_depth[tid] != RAY_TO_RESTART_DEPTH)
     {
         // Load material for the hit shape
         const DiffuseMaterial material = materials[materials_indices[primitive_index[tid]]];
