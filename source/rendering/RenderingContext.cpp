@@ -140,19 +140,19 @@ void RenderingContext::CreateImage(const std::string& filename) const
                                           &unmap_events[0]));
     CL_CHECK_CALL(clEnqueueUnmapMemObject(tile_rendering_context.command_queue,
                                           tile_rendering_context.rendering_data.d_pixels.pixel_g,
-                                          pixel_r,
+                                          pixel_g,
                                           0,
                                           nullptr,
                                           &unmap_events[1]));
     CL_CHECK_CALL(clEnqueueUnmapMemObject(tile_rendering_context.command_queue,
                                           tile_rendering_context.rendering_data.d_pixels.pixel_b,
-                                          pixel_r,
+                                          pixel_b,
                                           0,
                                           nullptr,
                                           &unmap_events[2]));
     CL_CHECK_CALL(clEnqueueUnmapMemObject(tile_rendering_context.command_queue,
                                           tile_rendering_context.rendering_data.d_pixels.filter_weight,
-                                          pixel_r,
+                                          filter_weight,
                                           0,
                                           nullptr,
                                           &unmap_events[3]));
