@@ -9,4 +9,5 @@ Please note that the code also works on CPUs but it's aimed at GPUs since data i
 
 Below is an output image of the system rendering 100 random spheres.
 The image resolution is 1920x1080 and was rendered in ~26 seconds on a NVIDIA GTX 1070 using 1024 samples for each pixel.
+
 ![](images/render.png)
