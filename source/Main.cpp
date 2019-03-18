@@ -9,52 +9,57 @@
 
 int main(int argc, const char** argv)
 {
-    if (argc != 2)
+    if (argc > 2)
     {
-        std::cerr << "Invalid number of arguments, expecting file to Scene description file\n";
+        std::cerr << "Invalid number of arguments, expecting file to Scene description file or nothing\n";
         exit(EXIT_FAILURE);
     }
 
     try
     {
-        // Read scene description
-        // const SceneDescription scene_description{ SceneParser::ReadSceneDescription(argv[1]) };
-
-        // Random scene description
         SceneDescription scene_description;
-        scene_description.image_width = 1920;
-        scene_description.image_height = 1080;
-        scene_description.tile_width = 32;
-        scene_description.tile_height = 32;
-        scene_description.pixel_samples = 1024;
-
-        scene_description.loaded_spheres.emplace_back(0.f, -5000.f, 0.f, 5000.f);
-        scene_description.loaded_materials.emplace_back(0.9f, 0.9f, 0.9f, 0.f, 0.f, 0.f);
-        scene_description.material_index.push_back(0);
-
-        scene_description.loaded_spheres.emplace_back(0.f, 0.f, 0.f, 5000.f);
-        scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, 1.f, 1.f, 1.f);
-        scene_description.material_index.push_back(1);
-
-        std::mt19937 generator;
-        std::uniform_real_distribution<float> position(-40.f, 40.f);
-        std::uniform_real_distribution<float> radius(0.5f, 5.f);
-        std::uniform_real_distribution<float> color(0.4f, 0.99f);
-        std::uniform_real_distribution<float> emitting;
-
-        for (unsigned int s = 0; s != 100; s++)
+        if (argc == 2)
         {
-            const float r{ radius(generator) };
-            scene_description.loaded_spheres.emplace_back(position(generator), r, position(generator), r);
-            if (emitting(generator) < 0.2f)
+            // Read scene description
+            scene_description = SceneParser::ReadSceneDescription(argv[1]);
+        }
+        else
+        {
+            // Random scene generation
+            scene_description.image_width = 1920;
+            scene_description.image_height = 1080;
+            scene_description.tile_width = 32;
+            scene_description.tile_height = 32;
+            scene_description.pixel_samples = 32;
+
+            scene_description.loaded_spheres.emplace_back(0.f, -5000.f, 0.f, 5000.f);
+            scene_description.loaded_materials.emplace_back(0.9f, 0.9f, 0.9f, 0.f, 0.f, 0.f);
+            scene_description.material_index.push_back(0);
+
+            scene_description.loaded_spheres.emplace_back(0.f, 0.f, 0.f, 5000.f);
+            scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, 1.f, 1.f, 1.f);
+            scene_description.material_index.push_back(1);
+
+            std::mt19937 generator;
+            std::uniform_real_distribution<float> position(-40.f, 40.f);
+            std::uniform_real_distribution<float> radius(0.5f, 5.f);
+            std::uniform_real_distribution<float> color(0.4f, 0.99f);
+            std::uniform_real_distribution<float> emitting;
+
+            for (unsigned int s = 0; s != 100; s++)
             {
-                scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, 1.5f, 1.5f, 1.5f);
+                const float r{ radius(generator) };
+                scene_description.loaded_spheres.emplace_back(position(generator), r, position(generator), r);
+                if (emitting(generator) < 0.2f)
+                {
+                    scene_description.loaded_materials.emplace_back(0.f, 0.f, 0.f, 1.5f, 1.5f, 1.5f);
+                }
+                else
+                {
+                    scene_description.loaded_materials.emplace_back(color(generator), color(generator), color(generator), 0.f, 0.f, 0.f);
+                }
+                scene_description.material_index.push_back(scene_description.loaded_materials.size() - 1);
             }
-            else
-            {
-                scene_description.loaded_materials.emplace_back(color(generator), color(generator), color(generator), 0.f, 0.f, 0.f);
-            }
-            scene_description.material_index.push_back(scene_description.loaded_materials.size() - 1);
         }
 
         // Create camera
