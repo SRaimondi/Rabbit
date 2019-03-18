@@ -31,7 +31,7 @@ int main(int argc, const char** argv)
             scene_description.image_height = 1080;
             scene_description.tile_width = 32;
             scene_description.tile_height = 32;
-            scene_description.pixel_samples = 32;
+            scene_description.pixel_samples = 1024;
 
             scene_description.loaded_spheres.emplace_back(0.f, -5000.f, 0.f, 5000.f);
             scene_description.loaded_materials.emplace_back(0.9f, 0.9f, 0.9f, 0.f, 0.f, 0.f);
